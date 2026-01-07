@@ -1355,6 +1355,8 @@ GameObject:
   - component: {fileID: 100296704}
   - component: {fileID: 100296706}
   - component: {fileID: 100296707}
+  - component: {fileID: 100296708}
+  - component: {fileID: 100296709}
   m_Layer: 5
   m_Name: CoopMenu
   m_TagString: Untagged
@@ -1418,6 +1420,46 @@ MonoBehaviour:
   hostCodeText: {fileID: 1963899025}
   statusText: {fileID: 76131883}
   maxClients: 3
+--- !u!114 &100296708
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100296703}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16d936f1c335d4e2bad723be8dc18f9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoopFlow
+  ShowTopMostFoldoutHeaderGroup: 1
+  lobbyRoot: {fileID: 2067035978}
+  campaignRoot: {fileID: 371735836}
+--- !u!114 &100296709
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100296703}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 1051953946
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 0
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!1 &100578384
 GameObject:
   m_ObjectHideFlags: 0
@@ -4608,7 +4650,19 @@ MonoBehaviour:
       m_Calls: []
   onPlayCoopLevel:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1219653298}
+        m_TargetAssemblyTypeName: CoopGameStarter, Assembly-CSharp
+        m_MethodName: RequestStart
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &376670704
 GameObject:
   m_ObjectHideFlags: 0
@@ -8922,6 +8976,7 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1219653299}
   - {fileID: 2141841935}
   - {fileID: 969969388}
   - {fileID: 294411359}
@@ -9183,6 +9238,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 100296708}
+        m_TargetAssemblyTypeName: CoopFlow, Assembly-CSharp
+        m_MethodName: RequestShowLobby
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 371735836}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
@@ -10717,6 +10784,78 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -200}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1219653296
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1219653299}
+  - component: {fileID: 1219653297}
+  - component: {fileID: 1219653298}
+  m_Layer: 0
+  m_Name: CoopGameStarter
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1219653297
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1219653296}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 1533141405
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 0
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
+--- !u!114 &1219653298
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1219653296}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 923c5784655b04c90b35ae78effeb603, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoopGameStarter
+  ShowTopMostFoldoutHeaderGroup: 1
+  gameplaySceneName: CoopGame
+--- !u!4 &1219653299
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1219653296}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 51.99997, y: 187.50316, z: 0}
+  m_LocalScale: {x: 4.4859815, y: 4.4859815, z: 4.4859815}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 856451586}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1227844824
 GameObject:
   m_ObjectHideFlags: 0
@@ -13778,7 +13917,7 @@ MonoBehaviour:
   NetworkConfig:
     ProtocolVersion: 0
     NetworkTransport: {fileID: 1565748319}
-    PlayerPrefab: {fileID: 0}
+    PlayerPrefab: {fileID: 4097590501367952233, guid: 0b576d7b0aa6848af9401b7ff95dd830, type: 3}
     Prefabs:
       NetworkPrefabsLists:
       - {fileID: 11400000, guid: f7ae07f4476d9499ca183868dd4006e0, type: 2}
@@ -15295,7 +15434,19 @@ MonoBehaviour:
       m_Calls: []
   onPlayCoopLevel:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1219653298}
+        m_TargetAssemblyTypeName: CoopGameStarter, Assembly-CSharp
+        m_MethodName: RequestStart
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1807604226
 GameObject:
   m_ObjectHideFlags: 0
@@ -17644,7 +17795,7 @@ MonoBehaviour:
   isSelectedMenu: 0
   menuController: {fileID: 856451587}
   lobby: {fileID: 2141841937}
-  campaignMenu: {fileID: 371735836}
+  flow: {fileID: 100296708}
   deselectKey: 27
 --- !u!1 &2070665536
 GameObject:

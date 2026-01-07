@@ -19,12 +19,12 @@ namespace UX.CoopMenu
 
                 if (Input.GetKeyDown(KeyCode.LeftArrow))
                 {
-                    selectedIndex = Mathf.Clamp(selectedIndex - 1, 0, options.Length);
+                    selectedIndex = Mathf.Clamp(selectedIndex - 1, 0, options.Length - 1);
                 }
 
                 if (Input.GetKeyDown(KeyCode.RightArrow))
                 {
-                    selectedIndex = Mathf.Clamp(selectedIndex + 1, 0, options.Length);
+                    selectedIndex = Mathf.Clamp(selectedIndex + 1, 0, options.Length - 1);
                 }
                 ApplyVisual();
             }

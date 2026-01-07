@@ -17,7 +17,9 @@ namespace UX.CoopMenu
         [Header("Dependencies")]
         [SerializeField] private UX.MainMenu.MainMenu menuController;
         [SerializeField] private LobbyManager lobby;
-        [SerializeField] private GameObject campaignMenu;
+
+        [Header("Flow")]
+        [SerializeField] private CoopFlow flow;
 
         [Header("Controls")]
         [SerializeField] private KeyCode deselectKey = KeyCode.Escape;
@@ -36,6 +38,9 @@ namespace UX.CoopMenu
 
             if (lobby == null)
                 lobby = FindFirstObjectByType<LobbyManager>();
+
+            if (flow == null)
+                flow = FindFirstObjectByType<CoopFlow>();
 
             SubscribeLobby();
             ClampIndexToCurrentRow();
@@ -128,14 +133,17 @@ namespace UX.CoopMenu
                     break;
 
                 case 1:
-                    if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsClient)
-                    {
-                        if (campaignMenu != null)
-                        {
-                            campaignMenu.SetActive(true);
-                            gameObject.SetActive(false);
-                        }
-                    }
+                    if (NetworkManager.Singleton == null) return;
+                    if (!NetworkManager.Singleton.IsListening) return;
+
+                    if (flow == null)
+                        flow = FindFirstObjectByType<CoopFlow>();
+
+                    if (flow == null) return;
+
+                    if (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer)
+                        flow.SetScreenServerRpc((byte)CoopFlow.Screen.Campaign);
+
                     break;
             }
         }

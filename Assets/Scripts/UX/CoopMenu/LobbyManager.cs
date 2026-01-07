@@ -77,7 +77,7 @@ namespace UX.CoopMenu
         {
             for (int i = 0; i < Slots.Count; i++)
             {
-                if (Slots[i].OwnerClientId == clientId) continue;
+                if (Slots[i].OwnerClientId != clientId) continue;
                 
                 LobbySlot slot = Slots[i];
                 slot.OwnerClientId = ulong.MaxValue;
