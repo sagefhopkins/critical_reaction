@@ -161,8 +161,10 @@ GameObject:
   - component: {fileID: 7112559593269627657}
   - component: {fileID: 6696703291792447809}
   - component: {fileID: 372047059850327902}
+  - component: {fileID: 6422162413954739525}
   - component: {fileID: 2905941562376431279}
   - component: {fileID: 537676955484159075}
+  - component: {fileID: 3191806694061522086}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -318,6 +320,21 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 32b7219d0e32440e69a983a195d31684, type: 2}
   - {fileID: 11400000, guid: f420806f1aaea4e778cf9dad1201c008, type: 2}
   heldRenderer: {fileID: 9134670580467709846}
+--- !u!114 &6422162413954739525
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4097590501367952233}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0dd282b3395137459326bbad7a3ba5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Player.PlayerInteractor
+  ShowTopMostFoldoutHeaderGroup: 1
+  interactKey: 101
+  carry: {fileID: 372047059850327902}
 --- !u!114 &2905941562376431279
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -336,6 +353,42 @@ MonoBehaviour:
   AutoUpdateKinematicState: 1
   AutoSetKinematicOnDespawn: 1
 --- !u!58 &537676955484159075
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4097590501367952233}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: -0.0034554685, y: -0.13328226}
+  m_Radius: 0.033898544
+--- !u!58 &3191806694061522086
 CircleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
