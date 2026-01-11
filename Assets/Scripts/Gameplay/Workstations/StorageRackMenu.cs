@@ -41,7 +41,7 @@ namespace UX
                 depositButton.onClick.AddListener(OnClickDeposit);
 
             if (closeButton != null)
-                closeButton.onClick.AddListener(Close);
+                closeButton.onClick.AddListener(OnClickClose);
 
             Hide();
         }
@@ -121,6 +121,14 @@ namespace UX
                 return;
 
             carry.TryDepositToRack(rack);
+        }
+
+        private void OnClickClose()
+        {
+            if (InteractionMenus.Instance != null)
+                InteractionMenus.Instance.CloseAll();
+            else
+                Close();
         }
 
         private void RefreshAll()
