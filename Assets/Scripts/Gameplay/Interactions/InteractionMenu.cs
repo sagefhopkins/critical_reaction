@@ -10,6 +10,7 @@ namespace UX
 
         [Header("Menus")]
         [SerializeField] private StorageRackMenu storageRackMenu;
+        [SerializeField] private WorkstationMenuManager workstationMenuManager;
 
         public bool AnyMenuOpen { get; private set; }
 
@@ -44,10 +45,27 @@ namespace UX
             storageRackMenu.Open(rack, carry);
         }
 
+        public void OpenWorkstation(Workstation workstation, PlayerCarry carry)
+        {
+            CloseAll();
+
+            if (workstationMenuManager == null || workstation == null || carry == null)
+            {
+                AnyMenuOpen = false;
+                return;
+            }
+
+            AnyMenuOpen = true;
+            workstationMenuManager.OpenMenu(workstation, carry);
+        }
+
         public void CloseAll()
         {
             if (storageRackMenu != null)
                 storageRackMenu.Close();
+
+            if (workstationMenuManager != null)
+                workstationMenuManager.CloseCurrentMenu();
 
             AnyMenuOpen = false;
         }
