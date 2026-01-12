@@ -7,6 +7,7 @@ namespace Gameplay.Workstations
         Centrifuge,
         Mixer,
         Distiller,
-        Freezer
+        Freezer,
+        Scale
     }
 }

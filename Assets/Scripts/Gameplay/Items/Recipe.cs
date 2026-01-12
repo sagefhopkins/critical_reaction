@@ -1,3 +1,4 @@
+using Gameplay.Workstations.Scale;
 using UnityEngine;
 
 namespace Gameplay.Items
@@ -9,7 +10,8 @@ namespace Gameplay.Items
         Cooling,
         Distillation,
         Synthesis,
-        Extraction
+        Extraction,
+        Weighing
     }
 
     [CreateAssetMenu(menuName = "Items/Recipe", fileName = "Recipe")]
@@ -33,6 +35,11 @@ namespace Gameplay.Items
         [Header("Work Requirements")]
         [SerializeField] private float workDuration = 5f;
 
+        [Header("Weighing Requirements (for Weighing recipes)")]
+        [SerializeField] private float targetMass = 10f;
+        [SerializeField] private float massTolerance = 0.5f;
+        [SerializeField] private WeightUnit requiredWeightUnit = WeightUnit.Grams;
+
         public string RecipeName => recipeName;
         public RecipeType Type => recipeType;
         public LabItem[] Ingredients => ingredients;
@@ -41,6 +48,9 @@ namespace Gameplay.Items
         public float MinTemperature => minTemperature;
         public float MaxTemperature => maxTemperature;
         public float WorkDuration => workDuration;
+        public float TargetMass => targetMass;
+        public float MassTolerance => massTolerance;
+        public WeightUnit RequiredWeightUnit => requiredWeightUnit;
 
         public bool IsTemperatureValid(float temperature)
         {

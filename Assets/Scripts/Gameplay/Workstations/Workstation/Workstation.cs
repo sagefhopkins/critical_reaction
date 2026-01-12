@@ -37,14 +37,23 @@ namespace Gameplay.Workstations
             NetworkVariableWritePermission.Server
         );
 
+        private NetworkVariable<ushort> outputSlotId = new NetworkVariable<ushort>(
+            NoneId,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+        );
+
         public WorkstationType Type => workstationType;
         public WorkState CurrentWorkState => workState.Value;
         public float WorkProgress => workProgress.Value;
         public Recipe AssignedRecipe => assignedRecipe;
+        public ushort OutputSlotId => outputSlotId.Value;
+        public bool HasOutput => outputSlotId.Value != NoneId;
 
         public event Action OnWorkStateChanged;
         public event Action OnProgressChanged;
         public event Action OnInventoryChanged;
+        public event Action OnOutputChanged;
 
         private void Awake()
         {
@@ -60,6 +69,7 @@ namespace Gameplay.Workstations
             workState.OnValueChanged += HandleWorkStateChanged;
             workProgress.OnValueChanged += HandleProgressChanged;
             SlotItemIds.OnListChanged += HandleInventoryChanged;
+            outputSlotId.OnValueChanged += HandleOutputChanged;
 
             if (IsServer)
             {
@@ -73,6 +83,7 @@ namespace Gameplay.Workstations
             workState.OnValueChanged -= HandleWorkStateChanged;
             workProgress.OnValueChanged -= HandleProgressChanged;
             SlotItemIds.OnListChanged -= HandleInventoryChanged;
+            outputSlotId.OnValueChanged -= HandleOutputChanged;
         }
 
         private void HandleWorkStateChanged(WorkState prev, WorkState next)
@@ -88,6 +99,11 @@ namespace Gameplay.Workstations
         private void HandleInventoryChanged(NetworkListEvent<ushort> evt)
         {
             OnInventoryChanged?.Invoke();
+        }
+
+        private void HandleOutputChanged(ushort prev, ushort next)
+        {
+            OnOutputChanged?.Invoke();
         }
 
         #region Inventory
@@ -169,13 +185,33 @@ namespace Gameplay.Workstations
         private Sprite GetSpriteById(ushort id)
         {
             if (id == NoneId) return null;
-            if (items == null) return null;
+            if (items == null)
+            {
+                Debug.LogWarning($"GetSpriteById: items array is null, cannot find sprite for id {id}");
+                return null;
+            }
 
             for (int i = 0; i < items.Length; i++)
             {
                 LabItem it = items[i];
                 if (it != null && it.Id == id)
                     return it.Sprite;
+            }
+
+            Debug.LogWarning($"GetSpriteById: Could not find item with id {id} in items array (length={items.Length})");
+            return null;
+        }
+
+        public LabItem GetLabItemById(ushort id)
+        {
+            if (id == NoneId) return null;
+            if (items == null) return null;
+
+            for (int i = 0; i < items.Length; i++)
+            {
+                LabItem it = items[i];
+                if (it != null && it.Id == id)
+                    return it;
             }
 
             return null;
@@ -192,6 +228,27 @@ namespace Gameplay.Workstations
             }
 
             return -1;
+        }
+
+        #endregion
+
+        #region Output Slot
+
+        public Sprite GetOutputSprite()
+        {
+            return GetSpriteById(outputSlotId.Value);
+        }
+
+        public void SetOutputServer(ushort itemId)
+        {
+            if (!IsServer) return;
+            outputSlotId.Value = itemId;
+        }
+
+        public void ClearOutputServer()
+        {
+            if (!IsServer) return;
+            outputSlotId.Value = NoneId;
         }
 
         #endregion
@@ -336,7 +393,8 @@ namespace Gameplay.Workstations
 
             ulong clientId = rpcParams.Receive.SenderClientId;
             PlayerCarry carry = GetCarryForClient(clientId);
-            if (carry == null) return;
+            if (carry == null)
+                return;
 
             if (!carry.IsHoldingServer())
                 return;
@@ -371,6 +429,23 @@ namespace Gameplay.Workstations
 
             ClearInventoryServer();
             ResetToIdleServer();
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void TryTakeOutputServerRpc(ServerRpcParams rpcParams = default)
+        {
+            if (!IsServer) return;
+            if (outputSlotId.Value == NoneId) return;
+
+            ulong clientId = rpcParams.Receive.SenderClientId;
+            PlayerCarry carry = GetCarryForClient(clientId);
+            if (carry == null) return;
+
+            if (carry.IsHoldingServer())
+                return;
+
+            carry.SetHeldItemServer(outputSlotId.Value);
+            outputSlotId.Value = NoneId;
         }
 
         #endregion

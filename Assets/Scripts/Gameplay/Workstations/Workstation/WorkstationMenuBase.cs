@@ -73,7 +73,9 @@ namespace Gameplay.Workstations
 
         protected void RequestClose()
         {
-            if (WorkstationMenuManager.Instance != null)
+            if (UX.InteractionMenus.Instance != null)
+                UX.InteractionMenus.Instance.CloseAll();
+            else if (WorkstationMenuManager.Instance != null)
                 WorkstationMenuManager.Instance.CloseCurrentMenu();
         }
     }

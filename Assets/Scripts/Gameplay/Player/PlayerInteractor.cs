@@ -3,14 +3,12 @@ using Gameplay.Workstations;
 using Unity.Netcode;
 using UnityEngine;
 using UX;
+using UX.Options;
 
 namespace Gameplay.Player
 {
     public class PlayerInteractor : NetworkBehaviour
     {
-        [Header("Interaction")]
-        [SerializeField] private KeyCode interactKey = KeyCode.E;
-
         [Header("Dependencies")]
         [SerializeField] private PlayerCarry carry;
 
@@ -51,7 +49,8 @@ namespace Gameplay.Player
             if (InteractionMenus.Instance != null && InteractionMenus.Instance.AnyMenuOpen)
                 return;
 
-            if (Input.GetKeyDown(interactKey))
+            bool interact = InputSettings.Instance != null ? InputSettings.Instance.IsInteractPressed() : Input.GetKeyDown(KeyCode.E);
+            if (interact)
             {
                 TryInteract();
             }

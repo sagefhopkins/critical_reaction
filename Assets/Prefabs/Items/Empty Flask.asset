@@ -15,3 +15,8 @@ MonoBehaviour:
   id: 1
   displayName: Empty Flask
   sprite: {fileID: 21300000, guid: 91a17fa74ab2e46829b8e82430ce9cb7, type: 3}
+  emptyMass: 0
+  canContainParticles: 0
+  maxParticleCapacity: 0
+  chemicalParticleData: {fileID: 11400000, guid: 8fe5f9cc30f8f4c3c9774f3ec1ea6ec2, type: 2}
+  totalParticleCount: 100

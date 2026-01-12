@@ -15,3 +15,8 @@ MonoBehaviour:
   id: 3
   displayName: Solvent
   sprite: {fileID: 21300000, guid: f1f4de87f8d564427a4e826442bbd8c4, type: 3}
+  emptyMass: 0
+  canContainParticles: 0
+  maxParticleCapacity: 0
+  chemicalParticleData: {fileID: 11400000, guid: ade7331f4acca432b918edbe93340156, type: 2}
+  totalParticleCount: 100

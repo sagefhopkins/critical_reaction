@@ -299,7 +299,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   ShowTopMostFoldoutHeaderGroup: 1
-  moveSpeed: 0.25
+  moveSpeed: 1.5
   rb: {fileID: 6428622452512127035}
   animator: {fileID: 9033173693189780118}
 --- !u!114 &372047059850327902

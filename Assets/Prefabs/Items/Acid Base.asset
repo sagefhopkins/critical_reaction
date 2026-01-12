@@ -15,3 +15,8 @@ MonoBehaviour:
   id: 2
   displayName: Acid Base
   sprite: {fileID: 21300000, guid: 50afcfbdad3924585be06c14d8ce8eb1, type: 3}
+  emptyMass: 0
+  canContainParticles: 0
+  maxParticleCapacity: 0
+  chemicalParticleData: {fileID: 11400000, guid: 60923ea75c37c4488acc098b15b694fd, type: 2}
+  totalParticleCount: 100

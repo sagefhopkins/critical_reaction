@@ -44,14 +44,18 @@ namespace Gameplay.Workstations
         {
             if (workstation == null) return;
 
+            Debug.Log($"WorkstationMenuManager.OpenMenu: Opening menu for workstation type: {workstation.Type}");
+
             CloseCurrentMenu();
 
             WorkstationMenuEntry entry = FindEntry(workstation.Type);
             if (entry == null || entry.menuRoot == null)
             {
-                Debug.LogWarning($"No menu configured for workstation type: {workstation.Type}");
+                Debug.LogWarning($"No menu configured for workstation type: {workstation.Type}. Available entries: {menus?.Length ?? 0}");
                 return;
             }
+
+            Debug.Log($"WorkstationMenuManager.OpenMenu: Found menu entry, activating {entry.menuRoot.name}");
 
             activeWorkstation = workstation;
             activeMenu = entry.menuScript;

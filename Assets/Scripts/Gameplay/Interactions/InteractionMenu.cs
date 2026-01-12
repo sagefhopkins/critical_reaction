@@ -33,6 +33,7 @@ namespace UX
 
         public void OpenStorageRack(StorageRack rack, PlayerCarry carry)
         {
+            Debug.Log($"InteractionMenus.OpenStorageRack called for rack: {rack?.name}");
             CloseAll();
 
             if (storageRackMenu == null || rack == null || carry == null)
@@ -47,10 +48,12 @@ namespace UX
 
         public void OpenWorkstation(Workstation workstation, PlayerCarry carry)
         {
+            Debug.Log($"InteractionMenus.OpenWorkstation called for workstation: {workstation?.name}, type: {workstation?.Type}");
             CloseAll();
 
             if (workstationMenuManager == null || workstation == null || carry == null)
             {
+                Debug.LogWarning($"InteractionMenus.OpenWorkstation: Cannot open - manager={workstationMenuManager != null}, workstation={workstation != null}, carry={carry != null}");
                 AnyMenuOpen = false;
                 return;
             }
