@@ -237,57 +237,57 @@ cd critical-reaction
 
 Campaign 1 walks the player through a simplified, game-friendly workflow for producing benzoic acid. Each level’s win condition is:  
 
-1. **Level 1 – Standard Solution Setup**
+**Level 1 – Standard Solution Setup**
    - **Goal:** Prepare a sodium hydroxide standard solution used later for neutralization/titration steps.
    - **Focus:** Accurate liquid measurement, labeling, and a basic “strength check” at a titration bench.
 
-2. **Level 2 – Prep Ingredients and Glassware**
+**Level 2 – Prep Ingredients and Glassware**
    - **Goal:** Gather and stage all required reagents; measure out reactants; prepare reaction glassware for the oxidation run.
    - **Focus:** Mise en place, correct measuring, and setting up the proper reaction apparatus.
 
-3. **Level 3 – Reaction Mix Assembly**
+**Level 3 – Reaction Mix Assembly**
    - **Goal:** Assemble the reaction mixture that will ultimately yield benzoic acid.
    - **Reagents:** Toluene, potassium permanganate (plus the required solvent system).
    - **Focus:** Combining reagents in the correct order and ratio; avoiding incorrect sequencing that reduces yield or creates side issues.
 
-4. **Level 4 – Heat and Hold**
+**Level 4 – Heat and Hold**
    - **Goal:** Run the reaction within a safe temperature band for a required hold time.
    - **Actions:** Heat and stir; monitor temperature; prevent bubbling/boil-over; add concentrated sulfuric acid at the correct time.
    - **Focus:** Hot plate control, cooling bath use, timed addition, and stability under heat.
 
-5. **Level 4.1 – Vacuum Distillation**
+**Level 4.1 – Vacuum Distillation**
    - **Goal:** Distill the reaction mixture under reduced pressure and collect the fraction at the target temperature range.
    - **Focus:** Running a vacuum distillation setup, making the correct collection cut, and avoiding overheating or collecting outside spec.
 
-6. **Level 5 – Wash and Separate**
+**Level 5 – Wash and Separate**
    - **Goal:** Purify via liquid–liquid separation and retain the correct phase for the next step.
    - **Equipment/Reagents:** Separatory funnel; diethyl ether and product fraction from distillation; concentrated sodium hydroxide solution.
    - **Actions:** Add concentrated NaOH to convert benzoic acid to sodium benzoate; shake and vent frequently (pressure builds); repeat extraction cycle **3×**; identify layers by density; **discard organic layer and keep aqueous layer** (contains sodium benzoate).
    - **Focus:** Layer identification, safe venting technique, repeatable wash cycles, and collecting the “good” phase.
 
-7. **Level 6 – Convert Back to Benzoic Acid**
+**Level 6 – Convert Back to Benzoic Acid**
    - **Goal:** Convert sodium benzoate back into benzoic acid and drive precipitation.
    - **Reagent:** HCl.
    - **Actions:** Slowly add HCl while monitoring pH until **pH < 2**; observe solids (“crashing out”) as benzoic acid forms.
    - **Focus:** Controlled addition, pH monitoring, and timing the endpoint for maximum recovery.
 
-8. **Level 7 – Vacuum Filtration**
+**Level 7 – Vacuum Filtration**
    - **Goal:** Isolate the precipitated benzoic acid solids and wash away residual salts/acid.
    - **Actions:** Vacuum filter; wash solids with water; collect wet cake.
    - **Focus:** Proper filtration setup, minimizing product loss, and clean washing technique.
 
-9. **Level 8 – Recrystallization**
+**Level 8 – Recrystallization**
    - **Goal:** Improve purity by dissolving and re-forming crystals under controlled conditions.
    - **Solvent System:** Water/ethanol mixture that does not fully dissolve the solids at room temperature.
    - **Actions:** Heat until all solids dissolve; cool slowly to room temperature to grow crystals; then chill (e.g., ice bath) to complete crystallization; filter again to collect purified crystals.
    - **Focus:** Solvent choice, controlled cooling for crystal growth, and purification through re-filtration.
 
-10. **Level 9 – Drying Oven**
+**Level 9 – Drying Oven**
    - **Goal:** Dry crystals to a target mass and dryness spec.
    - **Actions:** Dry product in a low-temperature drying oven until stable mass is achieved.
    - **Focus:** Avoiding overheating, meeting dryness requirements, and hitting the final yield target.
 
-11. **Level 10 – Critical Run: Full Batch**
+**Level 10 – Critical Run: Full Batch**
    - **Goal:** Run a streamlined version of the full process under one master timer and deliver the final required amount of benzoic acid.
    - **Focus:** Station-to-station coordination, parallel tasking, timing dependencies (reaction hold, distillation cut, separation cycles, crystallization/drying), and meeting final order quantity.
 
