@@ -25,6 +25,7 @@ namespace UX.Options
         [SerializeField] private float blinkSpeed = 6f;
 
         private Options options;
+        private MonoBehaviour pauseMenuOwner;
         private Controls working;
 
         private int selectedIndex;
@@ -45,6 +46,13 @@ namespace UX.Options
         public void SetOptions(Options owner)
         {
             options = owner;
+            pauseMenuOwner = null;
+        }
+
+        public void SetPauseMenu(MonoBehaviour owner)
+        {
+            pauseMenuOwner = owner;
+            options = null;
         }
 
         public void Open(Controls current)
@@ -127,8 +135,16 @@ namespace UX.Options
 
         private void SaveToOptions()
         {
-            if (options == null) return;
-            options.SetControls(working);
+            if (options != null)
+            {
+                options.SetControls(working);
+                return;
+            }
+
+            if (InputSettings.Instance != null)
+            {
+                InputSettings.Instance.SetControls(working);
+            }
         }
 
         private void Close()
@@ -137,7 +153,15 @@ namespace UX.Options
             gameObject.SetActive(false);
 
             if (options != null)
+            {
                 options.ReturnFocus();
+                return;
+            }
+
+            if (pauseMenuOwner != null)
+            {
+                pauseMenuOwner.SendMessage("ReturnFocus", SendMessageOptions.DontRequireReceiver);
+            }
         }
 
         private void RefreshAll()

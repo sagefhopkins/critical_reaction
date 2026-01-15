@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Gameplay.Coop;
 using Gameplay.Workstations;
 using Unity.Netcode;
 using UnityEngine;
@@ -41,6 +42,9 @@ namespace Gameplay.Player
         private void Update()
         {
             if (!IsOwner) return;
+
+            if (PauseManager.Instance != null && PauseManager.Instance.IsPaused)
+                return;
 
             PruneNulls();
 
