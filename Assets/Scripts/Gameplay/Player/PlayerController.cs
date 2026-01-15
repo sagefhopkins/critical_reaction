@@ -1,4 +1,5 @@
 using System;
+using Gameplay.Coop;
 using Unity.Netcode;
 using UnityEngine;
 using UX.Options;
@@ -90,6 +91,14 @@ public class PlayerController : NetworkBehaviour
     {
         if (IsOwner)
         {
+            if (PauseManager.Instance != null && PauseManager.Instance.IsPaused)
+            {
+                input = Vector2.zero;
+                ApplyLocalAnimFromInput();
+                SendAnimStateIfChanged();
+                return;
+            }
+
             ReadFourDirInput();
             UpdateLastMoveDir();
             ApplyLocalAnimFromInput();
