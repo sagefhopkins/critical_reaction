@@ -16,9 +16,12 @@ namespace Gameplay.Workstations.Scale
         [SerializeField] private GameObject particlePrefabOverride;
 
         [Header("Physics")]
-        [SerializeField] private float gravity = 500f;
-        [SerializeField] private float damping = 0.95f;
-        [SerializeField] private float bounciness = 0.3f;
+        [SerializeField] private float gravity = 15000f;
+        [SerializeField] private float damping = 0.85f;
+        [SerializeField] private float bounciness = 0.1f;
+        [SerializeField] private float particleRadius = 6f;
+        [SerializeField] private int collisionIterations = 2;
+        [SerializeField] private float separationStrength = 0.3f;
 
         private List<ChemicalParticle> localParticles = new List<ChemicalParticle>();
         private Rect bounds;
@@ -79,6 +82,78 @@ namespace Gameplay.Workstations.Scale
 
                 ConstrainToBounds(particle);
             }
+
+            ResolveParticleCollisions();
+
+            foreach (var particle in localParticles)
+            {
+                if (particle != null)
+                    ConstrainToBounds(particle);
+            }
+        }
+
+        private void ResolveParticleCollisions()
+        {
+            float minDist = particleRadius * 2f;
+            float minDistSq = minDist * minDist;
+
+            for (int iter = 0; iter < collisionIterations; iter++)
+            {
+                for (int i = 0; i < localParticles.Count; i++)
+                {
+                    var particleA = localParticles[i];
+                    if (particleA == null) continue;
+
+                    Vector2 posA = particleA.GetPosition();
+
+                    for (int j = i + 1; j < localParticles.Count; j++)
+                    {
+                        var particleB = localParticles[j];
+                        if (particleB == null) continue;
+
+                        Vector2 posB = particleB.GetPosition();
+                        Vector2 delta = posB - posA;
+                        float distSq = delta.sqrMagnitude;
+
+                        if (distSq < minDistSq)
+                        {
+                            Vector2 normal;
+                            float dist;
+
+                            if (distSq < 0.0001f)
+                            {
+                                float angle = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
+                                normal = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+                                dist = 0f;
+                            }
+                            else
+                            {
+                                dist = Mathf.Sqrt(distSq);
+                                normal = delta / dist;
+                            }
+
+                            float overlap = minDist - dist;
+                            Vector2 separation = normal * (overlap * separationStrength);
+
+                            posA -= separation;
+                            posB += separation;
+                            particleA.SetPosition(posA);
+                            particleB.SetPosition(posB);
+
+                            Vector2 velA = particleA.Velocity;
+                            Vector2 velB = particleB.Velocity;
+                            float relativeVel = Vector2.Dot(velB - velA, normal);
+
+                            if (relativeVel < 0)
+                            {
+                                Vector2 impulse = normal * (relativeVel * 0.5f);
+                                particleA.Velocity = velA + impulse;
+                                particleB.Velocity = velB - impulse;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private void ConstrainToBounds(ChemicalParticle particle)
@@ -86,25 +161,30 @@ namespace Gameplay.Workstations.Scale
             Vector2 pos = particle.GetPosition();
             Vector2 vel = particle.Velocity;
 
-            if (pos.x < bounds.xMin)
+            float minX = bounds.xMin + particleRadius;
+            float maxX = bounds.xMax - particleRadius;
+            float minY = bounds.yMin + particleRadius;
+            float maxY = bounds.yMax - particleRadius;
+
+            if (pos.x < minX)
             {
-                pos.x = bounds.xMin;
+                pos.x = minX;
                 vel.x = -vel.x * bounciness;
             }
-            else if (pos.x > bounds.xMax)
+            else if (pos.x > maxX)
             {
-                pos.x = bounds.xMax;
+                pos.x = maxX;
                 vel.x = -vel.x * bounciness;
             }
 
-            if (pos.y < bounds.yMin)
+            if (pos.y < minY)
             {
-                pos.y = bounds.yMin;
+                pos.y = minY;
                 vel.y = -vel.y * bounciness;
             }
-            else if (pos.y > bounds.yMax)
+            else if (pos.y > maxY)
             {
-                pos.y = bounds.yMax;
+                pos.y = maxY;
                 vel.y = -vel.y * bounciness;
             }
 
@@ -127,8 +207,16 @@ namespace Gameplay.Workstations.Scale
 
             while (localParticles.Count < targetCount)
             {
-                SpawnLocalParticle(GetRandomPositionInBounds());
+                SpawnLocalParticle(GetSpawnPositionAtTop());
             }
+        }
+
+        private Vector2 GetSpawnPositionAtTop()
+        {
+            return new Vector2(
+                UnityEngine.Random.Range(bounds.xMin, bounds.xMax),
+                bounds.yMax
+            );
         }
 
         private Vector2 GetRandomPositionInBounds()
@@ -206,6 +294,21 @@ namespace Gameplay.Workstations.Scale
             int taken = Mathf.Min(available, requestedCount);
             SetParticleCount(particleCount - taken);
             return taken;
+        }
+
+        public bool RemoveParticleInstance(ChemicalParticle particle)
+        {
+            if (particle == null) return false;
+
+            if (localParticles.Remove(particle))
+            {
+                particleCount = Mathf.Max(0, particleCount - 1);
+                Destroy(particle.gameObject);
+                OnParticleCountChanged?.Invoke();
+                return true;
+            }
+
+            return false;
         }
 
         #endregion

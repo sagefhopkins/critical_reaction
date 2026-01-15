@@ -1,24 +1,25 @@
 using System;
 using Gameplay.Items;
+using Gameplay.Workstations.Scale;
 using Unity.Netcode;
 using UnityEngine;
 
-namespace Gameplay.Workstations.Scale
+namespace Gameplay.Workstations.GraduatedCylinder
 {
-    public class ScaleController : NetworkBehaviour
+    public class GraduatedCylinderController : NetworkBehaviour
     {
         [Header("References")]
         [SerializeField] private Workstation workstation;
-        [SerializeField] private Beaker sourceBeaker;
-        [SerializeField] private Beaker measurementBeaker;
+        [SerializeField] private FluidContainer sourceContainer;
+        [SerializeField] private FluidContainer measurementCylinder;
 
         [Header("Item List")]
         [SerializeField] private LabItem[] items;
 
-        [Header("Scale Properties")]
-        [SerializeField] private float emptyBeakerMass = 50f;
-        [SerializeField] private float scaleAccuracy = 0.01f;
-        [SerializeField] private float noiseAmount = 0.005f;
+        [Header("Cylinder Properties")]
+        [SerializeField] private float cylinderCapacity = 100f;
+        [SerializeField] private float measurementAccuracy = 0.1f;
+        [SerializeField] private float noiseAmount = 0.05f;
         [SerializeField] private float updateInterval = 0.1f;
 
         private NetworkVariable<bool> isPoweredOn = new NetworkVariable<bool>(
@@ -27,25 +28,19 @@ namespace Gameplay.Workstations.Scale
             NetworkVariableWritePermission.Server
         );
 
-        private NetworkVariable<WeightUnit> currentUnit = new NetworkVariable<WeightUnit>(
-            WeightUnit.Grams,
+        private NetworkVariable<VolumeUnit> currentUnit = new NetworkVariable<VolumeUnit>(
+            VolumeUnit.Milliliters,
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server
         );
 
-        private NetworkVariable<float> tareOffset = new NetworkVariable<float>(
+        private NetworkVariable<float> displayedVolume = new NetworkVariable<float>(
             0f,
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server
         );
 
-        private NetworkVariable<float> displayedWeight = new NetworkVariable<float>(
-            0f,
-            NetworkVariableReadPermission.Everyone,
-            NetworkVariableWritePermission.Server
-        );
-
-        private NetworkVariable<float> finalMeasuredMass = new NetworkVariable<float>(
+        private NetworkVariable<float> finalMeasuredVolume = new NetworkVariable<float>(
             0f,
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server
@@ -57,8 +52,8 @@ namespace Gameplay.Workstations.Scale
             NetworkVariableWritePermission.Server
         );
 
-        private NetworkVariable<int> remainingSourceParticles = new NetworkVariable<int>(
-            0,
+        private NetworkVariable<float> remainingSourceVolume = new NetworkVariable<float>(
+            0f,
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server
         );
@@ -66,41 +61,41 @@ namespace Gameplay.Workstations.Scale
         private float lastUpdateTime;
         private int sourceSlotIndex = -1;
 
-        public event Action OnScaleStateChanged;
-        public event Action OnWeightChanged;
+        public event Action OnCylinderStateChanged;
+        public event Action OnVolumeChanged;
         public event Action OnSourceChemicalChanged;
 
         public bool IsPoweredOn => isPoweredOn.Value;
-        public WeightUnit CurrentUnit => currentUnit.Value;
-        public float DisplayedWeight => displayedWeight.Value;
-        public float TargetMass => GetTargetMassFromRecipe();
+        public VolumeUnit CurrentUnit => currentUnit.Value;
+        public float DisplayedVolume => displayedVolume.Value;
+        public float TargetVolume => GetTargetVolumeFromRecipe();
         public float Tolerance => GetToleranceFromRecipe();
-        public WeightUnit RequiredUnit => GetRequiredUnitFromRecipe();
-        public Beaker MeasurementBeaker => measurementBeaker;
-        public Beaker SourceBeaker => sourceBeaker;
-        public float FinalMeasuredMass => finalMeasuredMass.Value;
+        public VolumeUnit RequiredUnit => GetRequiredUnitFromRecipe();
+        public FluidContainer MeasurementCylinder => measurementCylinder;
+        public FluidContainer SourceContainer => sourceContainer;
+        public float FinalMeasuredVolume => finalMeasuredVolume.Value;
         public ushort SourceChemicalId => sourceChemicalId.Value;
-        public int RemainingSourceParticles => remainingSourceParticles.Value;
+        public float RemainingSourceVolume => remainingSourceVolume.Value;
 
-        private float GetTargetMassFromRecipe()
+        private float GetTargetVolumeFromRecipe()
         {
             if (workstation != null && workstation.AssignedRecipe != null)
-                return workstation.AssignedRecipe.TargetMass;
-            return 10f;
+                return workstation.AssignedRecipe.TargetVolume;
+            return 50f;
         }
 
         private float GetToleranceFromRecipe()
         {
             if (workstation != null && workstation.AssignedRecipe != null)
-                return workstation.AssignedRecipe.MassTolerance;
-            return 0.5f;
+                return workstation.AssignedRecipe.VolumeTolerance;
+            return 1f;
         }
 
-        private WeightUnit GetRequiredUnitFromRecipe()
+        private VolumeUnit GetRequiredUnitFromRecipe()
         {
             if (workstation != null && workstation.AssignedRecipe != null)
-                return workstation.AssignedRecipe.RequiredWeightUnit;
-            return WeightUnit.Grams;
+                return workstation.AssignedRecipe.RequiredVolumeUnit;
+            return VolumeUnit.Milliliters;
         }
 
         private void Awake()
@@ -113,8 +108,7 @@ namespace Gameplay.Workstations.Scale
         {
             isPoweredOn.OnValueChanged += HandlePowerChanged;
             currentUnit.OnValueChanged += HandleUnitChanged;
-            tareOffset.OnValueChanged += HandleTareChanged;
-            displayedWeight.OnValueChanged += HandleWeightChanged;
+            displayedVolume.OnValueChanged += HandleVolumeChanged;
             sourceChemicalId.OnValueChanged += HandleSourceChemicalChanged;
 
             if (workstation != null)
@@ -122,9 +116,14 @@ namespace Gameplay.Workstations.Scale
                 workstation.OnInventoryChanged += HandleInventoryChanged;
             }
 
-            if (sourceBeaker != null)
+            if (sourceContainer != null)
             {
-                sourceBeaker.OnParticleCountChanged += HandleSourceParticleCountChanged;
+                sourceContainer.OnVolumeChanged += HandleSourceVolumeChanged;
+            }
+
+            if (measurementCylinder != null)
+            {
+                measurementCylinder.OnVolumeChanged += HandleMeasurementVolumeChanged;
             }
 
             if (IsServer)
@@ -137,8 +136,7 @@ namespace Gameplay.Workstations.Scale
         {
             isPoweredOn.OnValueChanged -= HandlePowerChanged;
             currentUnit.OnValueChanged -= HandleUnitChanged;
-            tareOffset.OnValueChanged -= HandleTareChanged;
-            displayedWeight.OnValueChanged -= HandleWeightChanged;
+            displayedVolume.OnValueChanged -= HandleVolumeChanged;
             sourceChemicalId.OnValueChanged -= HandleSourceChemicalChanged;
 
             if (workstation != null)
@@ -146,25 +144,34 @@ namespace Gameplay.Workstations.Scale
                 workstation.OnInventoryChanged -= HandleInventoryChanged;
             }
 
-            if (sourceBeaker != null)
+            if (sourceContainer != null)
             {
-                sourceBeaker.OnParticleCountChanged -= HandleSourceParticleCountChanged;
+                sourceContainer.OnVolumeChanged -= HandleSourceVolumeChanged;
+            }
+
+            if (measurementCylinder != null)
+            {
+                measurementCylinder.OnVolumeChanged -= HandleMeasurementVolumeChanged;
             }
         }
 
-        private void HandlePowerChanged(bool prev, bool next) => OnScaleStateChanged?.Invoke();
-        private void HandleUnitChanged(WeightUnit prev, WeightUnit next) => OnScaleStateChanged?.Invoke();
-        private void HandleTareChanged(float prev, float next) => OnScaleStateChanged?.Invoke();
-        private void HandleWeightChanged(float prev, float next) => OnWeightChanged?.Invoke();
+        private void HandlePowerChanged(bool prev, bool next) => OnCylinderStateChanged?.Invoke();
+        private void HandleUnitChanged(VolumeUnit prev, VolumeUnit next) => OnCylinderStateChanged?.Invoke();
+        private void HandleVolumeChanged(float prev, float next) => OnVolumeChanged?.Invoke();
         private void HandleSourceChemicalChanged(ushort prev, ushort next) => OnSourceChemicalChanged?.Invoke();
 
-        private void HandleSourceParticleCountChanged()
+        private void HandleSourceVolumeChanged()
         {
             if (!IsServer) return;
-            if (sourceBeaker != null)
+            if (sourceContainer != null)
             {
-                remainingSourceParticles.Value = sourceBeaker.ParticleCount;
+                remainingSourceVolume.Value = sourceContainer.CurrentVolume;
             }
+        }
+
+        private void HandleMeasurementVolumeChanged()
+        {
+            OnVolumeChanged?.Invoke();
         }
 
         private void HandleInventoryChanged()
@@ -181,34 +188,28 @@ namespace Gameplay.Workstations.Scale
 
             if (Time.time - lastUpdateTime >= updateInterval)
             {
-                UpdateWeight();
+                UpdateVolume();
                 lastUpdateTime = Time.time;
             }
         }
 
-        private void UpdateWeight()
+        private void UpdateVolume()
         {
             if (!IsServer) return;
 
             if (!isPoweredOn.Value)
             {
-                displayedWeight.Value = 0f;
+                displayedVolume.Value = 0f;
                 return;
             }
 
-            float rawMass = CalculateRawMass();
-            float adjustedMass = rawMass - tareOffset.Value;
+            float rawVolume = measurementCylinder != null ? measurementCylinder.CurrentVolume : 0f;
 
-            adjustedMass += UnityEngine.Random.Range(-noiseAmount, noiseAmount);
-            adjustedMass = Mathf.Round(adjustedMass / scaleAccuracy) * scaleAccuracy;
+            rawVolume += UnityEngine.Random.Range(-noiseAmount, noiseAmount);
+            rawVolume = Mathf.Round(rawVolume / measurementAccuracy) * measurementAccuracy;
+            rawVolume = Mathf.Max(0f, rawVolume);
 
-            displayedWeight.Value = adjustedMass;
-        }
-
-        private float CalculateRawMass()
-        {
-            float beakerContentMass = measurementBeaker != null ? measurementBeaker.GetTotalMass() : 0f;
-            return emptyBeakerMass + beakerContentMass;
+            displayedVolume.Value = rawVolume;
         }
 
         public string GetDisplayString()
@@ -216,32 +217,30 @@ namespace Gameplay.Workstations.Scale
             if (!isPoweredOn.Value)
                 return "----";
 
-            float displayValue = ConvertFromGrams(displayedWeight.Value, currentUnit.Value);
+            float displayValue = ConvertFromMilliliters(displayedVolume.Value, currentUnit.Value);
             string unitLabel = GetUnitLabel(currentUnit.Value);
             return $"{displayValue:F2} {unitLabel}";
         }
 
-        public static float ConvertFromGrams(float grams, WeightUnit unit)
+        public static float ConvertFromMilliliters(float milliliters, VolumeUnit unit)
         {
             return unit switch
             {
-                WeightUnit.Grams => grams,
-                WeightUnit.Milligrams => grams * 1000f,
-                WeightUnit.Kilograms => grams / 1000f,
-                WeightUnit.Ounces => grams * 0.035274f,
-                _ => grams
+                VolumeUnit.Milliliters => milliliters,
+                VolumeUnit.Liters => milliliters / 1000f,
+                VolumeUnit.Microliters => milliliters * 1000f,
+                _ => milliliters
             };
         }
 
-        public static string GetUnitLabel(WeightUnit unit)
+        public static string GetUnitLabel(VolumeUnit unit)
         {
             return unit switch
             {
-                WeightUnit.Grams => "g",
-                WeightUnit.Milligrams => "mg",
-                WeightUnit.Kilograms => "kg",
-                WeightUnit.Ounces => "oz",
-                _ => "g"
+                VolumeUnit.Milliliters => "mL",
+                VolumeUnit.Liters => "L",
+                VolumeUnit.Microliters => "μL",
+                _ => "mL"
             };
         }
 
@@ -308,7 +307,7 @@ namespace Gameplay.Workstations.Scale
             if (sourceChemicalId.Value != foundChemicalId)
             {
                 sourceChemicalId.Value = foundChemicalId;
-                ConfigureSourceBeakerFromChemical();
+                ConfigureSourceContainerFromChemical();
             }
         }
 
@@ -330,31 +329,36 @@ namespace Gameplay.Workstations.Scale
             return false;
         }
 
-        private void ConfigureSourceBeakerFromChemical()
+        private void ConfigureSourceContainerFromChemical()
         {
-            if (sourceBeaker == null) return;
+            if (sourceContainer == null) return;
 
             LabItem chemicalItem = GetLabItemById(sourceChemicalId.Value);
 
             if (chemicalItem != null && chemicalItem.IsChemical)
             {
+                float initialVolume = remainingSourceVolume.Value > 0
+                    ? remainingSourceVolume.Value
+                    : chemicalItem.TotalParticleCount;
+
                 if (IsServer)
                 {
-                    remainingSourceParticles.Value = chemicalItem.TotalParticleCount;
+                    remainingSourceVolume.Value = initialVolume;
                 }
-                sourceBeaker.ConfigureFromLabItem(chemicalItem, remainingSourceParticles.Value > 0 ? remainingSourceParticles.Value : chemicalItem.TotalParticleCount);
+
+                sourceContainer.ConfigureFromLabItem(chemicalItem, initialVolume);
             }
             else
             {
                 if (IsServer)
                 {
-                    remainingSourceParticles.Value = 0;
+                    remainingSourceVolume.Value = 0f;
                 }
-                sourceBeaker.ClearConfiguration();
+                sourceContainer.ClearConfiguration();
             }
         }
 
-        public void RefreshSourceBeakerConfiguration()
+        public void RefreshSourceContainerConfiguration()
         {
             if (IsServer)
             {
@@ -363,10 +367,12 @@ namespace Gameplay.Workstations.Scale
 
             LabItem chemicalItem = GetLabItemById(sourceChemicalId.Value);
 
-            if (chemicalItem != null && chemicalItem.IsChemical && sourceBeaker != null)
+            if (chemicalItem != null && chemicalItem.IsChemical && sourceContainer != null)
             {
-                int particleCount = remainingSourceParticles.Value > 0 ? remainingSourceParticles.Value : chemicalItem.TotalParticleCount;
-                sourceBeaker.ConfigureFromLabItem(chemicalItem, particleCount);
+                float volume = remainingSourceVolume.Value > 0
+                    ? remainingSourceVolume.Value
+                    : chemicalItem.TotalParticleCount;
+                sourceContainer.ConfigureFromLabItem(chemicalItem, volume);
             }
         }
 
@@ -378,7 +384,7 @@ namespace Gameplay.Workstations.Scale
         {
             if (!isPoweredOn.Value)
             {
-                return new MeasurementResult(false, "The scale is not turned on!");
+                return new MeasurementResult(false, "The graduated cylinder is not turned on!");
             }
 
             if (sourceChemicalId.Value == 0)
@@ -386,35 +392,29 @@ namespace Gameplay.Workstations.Scale
                 return new MeasurementResult(false, "No chemical source in workstation!");
             }
 
-            bool properlyTared = Mathf.Abs(tareOffset.Value - emptyBeakerMass) < 1f;
-            if (!properlyTared)
-            {
-                return new MeasurementResult(false, "Did you remember to tare the scale with the empty beaker?");
-            }
-
-            WeightUnit reqUnit = RequiredUnit;
+            VolumeUnit reqUnit = RequiredUnit;
             if (currentUnit.Value != reqUnit)
             {
                 return new MeasurementResult(false, $"Please measure in {GetUnitLabel(reqUnit)}");
             }
 
-            float actualMass = measurementBeaker != null ? measurementBeaker.GetTotalMass() : 0f;
-            float target = TargetMass;
+            float actualVolume = measurementCylinder != null ? measurementCylinder.CurrentVolume : 0f;
+            float target = TargetVolume;
             float tol = Tolerance;
-            float difference = Mathf.Abs(actualMass - target);
+            float difference = Mathf.Abs(actualVolume - target);
 
             if (difference <= tol)
             {
                 float accuracy = 1f - (difference / tol);
                 return new MeasurementResult(true, "Perfect measurement!", accuracy);
             }
-            else if (actualMass < target)
+            else if (actualVolume < target)
             {
-                return new MeasurementResult(false, $"Not enough! You need {target - actualMass:F2}g more.");
+                return new MeasurementResult(false, $"Not enough! You need {target - actualVolume:F2}mL more.");
             }
             else
             {
-                return new MeasurementResult(false, $"Too much! You have {actualMass - target:F2}g extra.");
+                return new MeasurementResult(false, $"Too much! You have {actualVolume - target:F2}mL extra.");
             }
         }
 
@@ -428,20 +428,6 @@ namespace Gameplay.Workstations.Scale
             if (!IsServer) return;
 
             isPoweredOn.Value = !isPoweredOn.Value;
-
-            if (!isPoweredOn.Value)
-            {
-                tareOffset.Value = 0f;
-            }
-        }
-
-        [ServerRpc(RequireOwnership = false)]
-        public void TareServerRpc(ServerRpcParams rpcParams = default)
-        {
-            if (!IsServer) return;
-            if (!isPoweredOn.Value) return;
-
-            tareOffset.Value = CalculateRawMass();
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -450,8 +436,8 @@ namespace Gameplay.Workstations.Scale
             if (!IsServer) return;
             if (!isPoweredOn.Value) return;
 
-            int unitCount = Enum.GetValues(typeof(WeightUnit)).Length;
-            currentUnit.Value = (WeightUnit)(((int)currentUnit.Value + 1) % unitCount);
+            int unitCount = Enum.GetValues(typeof(VolumeUnit)).Length;
+            currentUnit.Value = (VolumeUnit)(((int)currentUnit.Value + 1) % unitCount);
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -464,8 +450,8 @@ namespace Gameplay.Workstations.Scale
 
             if (result.IsCorrect)
             {
-                float measuredMass = measurementBeaker != null ? measurementBeaker.GetTotalMass() : 0f;
-                finalMeasuredMass.Value = measuredMass;
+                float measuredVolume = measurementCylinder != null ? measurementCylinder.CurrentVolume : 0f;
+                finalMeasuredVolume.Value = measuredVolume;
 
                 ConsumeSourceChemical();
 
@@ -475,7 +461,7 @@ namespace Gameplay.Workstations.Scale
                     PlaceOutputInOutputSlot(outputItem.Id);
                 }
 
-                ResetScale();
+                ResetCylinder();
             }
         }
 
@@ -492,11 +478,11 @@ namespace Gameplay.Workstations.Scale
 
             sourceChemicalId.Value = 0;
             sourceSlotIndex = -1;
-            remainingSourceParticles.Value = 0;
+            remainingSourceVolume.Value = 0f;
 
-            if (sourceBeaker != null)
+            if (sourceContainer != null)
             {
-                sourceBeaker.ClearConfiguration();
+                sourceContainer.ClearConfiguration();
             }
         }
 
@@ -508,19 +494,18 @@ namespace Gameplay.Workstations.Scale
             workstation.SetOutputServer(outputItemId);
         }
 
-        private void ResetScale()
+        private void ResetCylinder()
         {
             if (!IsServer) return;
 
             isPoweredOn.Value = false;
-            tareOffset.Value = 0f;
-            currentUnit.Value = WeightUnit.Grams;
-            finalMeasuredMass.Value = 0f;
-            remainingSourceParticles.Value = 0;
+            currentUnit.Value = VolumeUnit.Milliliters;
+            finalMeasuredVolume.Value = 0f;
+            remainingSourceVolume.Value = 0f;
 
-            if (measurementBeaker != null)
+            if (measurementCylinder != null)
             {
-                measurementBeaker.SetParticleCount(0);
+                measurementCylinder.SetVolume(0f);
             }
         }
 

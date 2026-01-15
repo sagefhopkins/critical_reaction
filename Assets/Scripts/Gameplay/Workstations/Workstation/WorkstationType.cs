@@ -8,6 +8,7 @@ namespace Gameplay.Workstations
         Mixer,
         Distiller,
         Freezer,
-        Scale
+        Scale,
+        GraduatedCylinder
     }
 }

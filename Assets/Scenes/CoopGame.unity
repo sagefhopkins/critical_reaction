@@ -1191,8 +1191,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.7216, y: -28.8645}
-  m_SizeDelta: {x: 248.6525, y: 212.5717}
+  m_AnchoredPosition: {x: -0.7216, y: -34.589}
+  m_SizeDelta: {x: 248.6525, y: 224.02}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &280452250
 GameObject:
@@ -2287,7 +2287,6 @@ GameObject:
   m_Component:
   - component: {fileID: 558513544}
   - component: {fileID: 558513546}
-  - component: {fileID: 558513545}
   m_Layer: 0
   m_Name: Scoop
   m_TagString: Untagged
@@ -2311,34 +2310,11 @@ RectTransform:
   - {fileID: 863928141}
   m_Father: {fileID: 372928340}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 20.72998}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 239.95337, y: 143.92734}
+  m_SizeDelta: {x: 54.6919, y: 313.7584}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!223 &558513545
-Canvas:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 558513543}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_RenderMode: 2
-  m_Camera: {fileID: 0}
-  m_PlaneDistance: 100
-  m_PixelPerfect: 0
-  m_ReceivesEvents: 1
-  m_OverrideSorting: 0
-  m_OverridePixelPerfect: 0
-  m_SortingBucketNormalizedSize: 0
-  m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 0
-  m_UpdateRectTransformForStandalone: 0
-  m_SortingLayerID: 0
-  m_SortingOrder: 0
-  m_TargetDisplay: 0
 --- !u!114 &558513546
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2353,9 +2329,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Workstations.Scale.ScoopController
   scoopHead: {fileID: 863928141}
   particleContainer: {fileID: 863928141}
-  canvas: {fileID: 558513545}
+  canvas: {fileID: 543574274}
   particlePrefab: {fileID: 6076664333088593298, guid: 1598297fdd4364d458f99a816a8d5a86, type: 3}
-  pickupRadius: 30
+  pickupRadius: 10
   maxParticlesHeld: 10
   velocityLossThreshold: 500
   lossChanceMultiplier: 0.001
@@ -2663,7 +2639,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -72.356}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 204, y: -10}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 484.9592, y: 121.2398}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &704925865
@@ -3410,8 +3386,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 256.40906, y: -170.96344}
-  m_SizeDelta: {x: 52.1008, y: 90.6324}
+  m_AnchoredPosition: {x: 48.92517, y: -145.00854}
+  m_SizeDelta: {x: 72.2505, y: 123.7354}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &881753567
 GameObject:
@@ -6302,9 +6278,12 @@ MonoBehaviour:
   beakerBounds: {fileID: 1555929808}
   particlePrefab: {fileID: 6076664333088593298, guid: 1598297fdd4364d458f99a816a8d5a86, type: 3}
   particlePrefabOverride: {fileID: 0}
-  gravity: 500
-  damping: 0.95
-  bounciness: 0.3
+  gravity: 1500
+  damping: 0.85
+  bounciness: 0.1
+  particleRadius: 6
+  collisionIterations: 2
+  separationStrength: 0.3
 --- !u!1 &1496316138
 GameObject:
   m_ObjectHideFlags: 0
@@ -6560,8 +6539,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -31}
-  m_SizeDelta: {x: 248.6525, y: 212.5717}
+  m_AnchoredPosition: {x: 0, y: -35.656}
+  m_SizeDelta: {x: 248.6525, y: 221.88}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1556081978
 GameObject:
@@ -9378,9 +9357,12 @@ MonoBehaviour:
   beakerBounds: {fileID: 270331632}
   particlePrefab: {fileID: 6076664333088593298, guid: 1598297fdd4364d458f99a816a8d5a86, type: 3}
   particlePrefabOverride: {fileID: 0}
-  gravity: 500
-  damping: 0.95
-  bounciness: 0.3
+  gravity: 1500
+  damping: 0.3
+  bounciness: 0.1
+  particleRadius: 6
+  collisionIterations: 2
+  separationStrength: 0.1
 --- !u!1 &1986482243
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,13 +1,14 @@
+using Gameplay.Workstations.Scale;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Gameplay.Workstations.Scale
+namespace Gameplay.Workstations.GraduatedCylinder
 {
-    public class ScaleMenu : WorkstationMenuBase
+    public class GraduatedCylinderMenu : WorkstationMenuBase
     {
         [Header("Screen Roots")]
-        [SerializeField] private GameObject scaleScreenRoot;
+        [SerializeField] private GameObject cylinderScreenRoot;
         [SerializeField] private GameObject inventoryScreenRoot;
 
         [Header("Output Slot")]
@@ -19,27 +20,24 @@ namespace Gameplay.Workstations.Scale
         [SerializeField] private Image[] slotImages;
         [SerializeField] private Button depositButton;
 
-        [Header("Scale References")]
-        [SerializeField] private ScoopController scoop;
-        [SerializeField] private BeakerTriggerZone sourceZone;
-        [SerializeField] private BeakerTriggerZone targetZone;
+        [Header("Cylinder References")]
+        [SerializeField] private PourController pourController;
+        [SerializeField] private FluidContainer sourceContainer;
+        [SerializeField] private FluidContainer measurementCylinder;
 
-        [Header("Scale Controls")]
+        [Header("Cylinder Controls")]
         [SerializeField] private Button powerButton;
-        [SerializeField] private Button tareButton;
         [SerializeField] private Button unitButton;
         [SerializeField] private Button closeButton;
         [SerializeField] private Button inventoryButton;
 
         [Header("Inventory Controls")]
-        [SerializeField] private Button backToScaleButton;
+        [SerializeField] private Button backToCylinderButton;
 
         [Header("Display")]
-        [SerializeField] private TMP_Text weightDisplayText;
+        [SerializeField] private TMP_Text volumeDisplayText;
 
-        private ScaleController scaleController;
-        private Beaker sourceBeaker;
-        private Beaker measurementBeaker;
+        private GraduatedCylinderController cylinderController;
         private bool manualInventoryView;
 
         private void Awake()
@@ -63,9 +61,6 @@ namespace Gameplay.Workstations.Scale
             if (powerButton != null)
                 powerButton.onClick.AddListener(OnClickPower);
 
-            if (tareButton != null)
-                tareButton.onClick.AddListener(OnClickTare);
-
             if (unitButton != null)
                 unitButton.onClick.AddListener(OnClickUnit);
 
@@ -75,51 +70,45 @@ namespace Gameplay.Workstations.Scale
             if (inventoryButton != null)
                 inventoryButton.onClick.AddListener(OnClickInventory);
 
-            if (backToScaleButton != null)
-                backToScaleButton.onClick.AddListener(OnClickBackToScale);
+            if (backToCylinderButton != null)
+                backToCylinderButton.onClick.AddListener(OnClickBackToCylinder);
         }
 
         protected override void OnOpened()
         {
             manualInventoryView = false;
-            scaleController = workstation.GetComponent<ScaleController>();
+            cylinderController = workstation.GetComponent<GraduatedCylinderController>();
 
             if (workstation != null)
             {
                 workstation.OnOutputChanged += OnOutputChanged;
             }
 
-            if (scaleController != null)
+            if (cylinderController != null)
             {
-                sourceBeaker = scaleController.SourceBeaker;
-                measurementBeaker = scaleController.MeasurementBeaker;
+                sourceContainer = cylinderController.SourceContainer;
+                measurementCylinder = cylinderController.MeasurementCylinder;
 
-                scaleController.OnScaleStateChanged += RefreshButtons;
-                scaleController.OnWeightChanged += RefreshWeight;
-                scaleController.OnSourceChemicalChanged += OnSourceChemicalChanged;
+                cylinderController.OnCylinderStateChanged += RefreshButtons;
+                cylinderController.OnVolumeChanged += RefreshVolume;
+                cylinderController.OnSourceChemicalChanged += OnSourceChemicalChanged;
 
-                if (measurementBeaker != null)
+                if (measurementCylinder != null)
                 {
-                    measurementBeaker.OnParticleCountChanged += RefreshWeight;
+                    measurementCylinder.OnVolumeChanged += RefreshVolume;
                 }
 
-                if (sourceBeaker != null)
+                if (sourceContainer != null)
                 {
-                    sourceBeaker.OnParticleCountChanged += RefreshAll;
-                    sourceBeaker.OnParticleDataChanged += RefreshAll;
+                    sourceContainer.OnVolumeChanged += RefreshAll;
                 }
 
-                scaleController.RefreshSourceBeakerConfiguration();
+                cylinderController.RefreshSourceContainerConfiguration();
             }
 
-            if (scoop != null && sourceBeaker != null)
+            if (pourController != null && sourceContainer != null)
             {
-                scoop.SetSourceBeaker(sourceBeaker);
-            }
-
-            if (sourceZone != null && sourceBeaker != null)
-            {
-                sourceZone.gameObject.SetActive(sourceBeaker.IsConfigured);
+                pourController.SetSourceContainer(sourceContainer);
             }
 
             UpdateActiveScreen();
@@ -128,8 +117,8 @@ namespace Gameplay.Workstations.Scale
 
         protected override void OnClosed()
         {
-            if (scaleScreenRoot != null)
-                scaleScreenRoot.SetActive(false);
+            if (cylinderScreenRoot != null)
+                cylinderScreenRoot.SetActive(false);
             if (inventoryScreenRoot != null)
                 inventoryScreenRoot.SetActive(false);
 
@@ -138,33 +127,31 @@ namespace Gameplay.Workstations.Scale
                 workstation.OnOutputChanged -= OnOutputChanged;
             }
 
-            if (scaleController != null)
+            if (cylinderController != null)
             {
-                scaleController.OnScaleStateChanged -= RefreshButtons;
-                scaleController.OnWeightChanged -= RefreshWeight;
-                scaleController.OnSourceChemicalChanged -= OnSourceChemicalChanged;
+                cylinderController.OnCylinderStateChanged -= RefreshButtons;
+                cylinderController.OnVolumeChanged -= RefreshVolume;
+                cylinderController.OnSourceChemicalChanged -= OnSourceChemicalChanged;
 
-                if (measurementBeaker != null)
+                if (measurementCylinder != null)
                 {
-                    measurementBeaker.OnParticleCountChanged -= RefreshWeight;
+                    measurementCylinder.OnVolumeChanged -= RefreshVolume;
                 }
 
-                if (sourceBeaker != null)
+                if (sourceContainer != null)
                 {
-                    sourceBeaker.OnParticleCountChanged -= RefreshAll;
-                    sourceBeaker.OnParticleDataChanged -= RefreshAll;
+                    sourceContainer.OnVolumeChanged -= RefreshAll;
                 }
             }
 
-            if (scoop != null && scoop.gameObject.activeInHierarchy)
+            if (pourController != null)
             {
-                scoop.ClearAllHeldParticles();
-                scoop.ResetToOriginalPosition();
+                pourController.ResetToOriginalPosition();
             }
 
-            scaleController = null;
-            sourceBeaker = null;
-            measurementBeaker = null;
+            cylinderController = null;
+            sourceContainer = null;
+            measurementCylinder = null;
         }
 
         protected override void OnWorkStateChanged()
@@ -188,8 +175,8 @@ namespace Gameplay.Workstations.Scale
         {
             bool showInventory = ShouldShowInventoryScreen();
 
-            if (scaleScreenRoot != null)
-                scaleScreenRoot.SetActive(!showInventory);
+            if (cylinderScreenRoot != null)
+                cylinderScreenRoot.SetActive(!showInventory);
             if (inventoryScreenRoot != null)
                 inventoryScreenRoot.SetActive(showInventory);
         }
@@ -215,7 +202,7 @@ namespace Gameplay.Workstations.Scale
             return false;
         }
 
-        private bool CanReturnToScale()
+        private bool CanReturnToCylinder()
         {
             bool isHolding = localCarry != null && localCarry.IsHoldingLocal;
             bool hasOutput = workstation != null && workstation.HasOutput;
@@ -250,14 +237,9 @@ namespace Gameplay.Workstations.Scale
 
         private void OnSourceChemicalChanged()
         {
-            if (scaleController != null)
+            if (cylinderController != null)
             {
-                scaleController.RefreshSourceBeakerConfiguration();
-            }
-
-            if (sourceZone != null && sourceBeaker != null)
-            {
-                sourceZone.gameObject.SetActive(sourceBeaker.IsConfigured);
+                cylinderController.RefreshSourceContainerConfiguration();
             }
 
             UpdateActiveScreen();
@@ -294,30 +276,24 @@ namespace Gameplay.Workstations.Scale
 
         private void OnClickPower()
         {
-            if (scaleController == null) return;
-            scaleController.TogglePowerServerRpc();
-        }
-
-        private void OnClickTare()
-        {
-            if (scaleController == null) return;
-            scaleController.TareServerRpc();
+            if (cylinderController == null) return;
+            cylinderController.TogglePowerServerRpc();
         }
 
         private void OnClickUnit()
         {
-            if (scaleController == null) return;
-            scaleController.CycleUnitServerRpc();
+            if (cylinderController == null) return;
+            cylinderController.CycleUnitServerRpc();
         }
 
         private void OnClickClose()
         {
-            if (scaleController != null)
+            if (cylinderController != null)
             {
-                MeasurementResult result = scaleController.CheckMeasurement();
+                MeasurementResult result = cylinderController.CheckMeasurement();
                 if (result.IsCorrect)
                 {
-                    scaleController.ConfirmAndPlaceOutputServerRpc();
+                    cylinderController.ConfirmAndPlaceOutputServerRpc();
                     UpdateActiveScreen();
                     RefreshAll();
                     return;
@@ -334,9 +310,9 @@ namespace Gameplay.Workstations.Scale
             RefreshAll();
         }
 
-        private void OnClickBackToScale()
+        private void OnClickBackToCylinder()
         {
-            if (!CanReturnToScale())
+            if (!CanReturnToCylinder())
                 return;
 
             manualInventoryView = false;
@@ -347,7 +323,7 @@ namespace Gameplay.Workstations.Scale
         private void RefreshAll()
         {
             RefreshButtons();
-            RefreshWeight();
+            RefreshVolume();
         }
 
         private void RefreshButtons()
@@ -357,7 +333,7 @@ namespace Gameplay.Workstations.Scale
 
             bool isHolding = localCarry != null && localCarry.IsHoldingLocal;
             bool hasEmptySlot = workstation.HasEmptySlotClient();
-            bool isPowered = scaleController != null && scaleController.IsPoweredOn;
+            bool isPowered = cylinderController != null && cylinderController.IsPoweredOn;
 
             for (int i = 0; i < Workstation.SlotCount; i++)
             {
@@ -392,26 +368,23 @@ namespace Gameplay.Workstations.Scale
                 outputSlotButton.gameObject.SetActive(hasOutput);
             }
 
-            if (tareButton != null)
-                tareButton.interactable = isPowered;
-
             if (unitButton != null)
                 unitButton.interactable = isPowered;
 
-            if (backToScaleButton != null)
+            if (backToCylinderButton != null)
             {
-                bool canReturn = CanReturnToScale();
-                backToScaleButton.gameObject.SetActive(canReturn && manualInventoryView);
-                backToScaleButton.interactable = canReturn;
+                bool canReturn = CanReturnToCylinder();
+                backToCylinderButton.gameObject.SetActive(canReturn && manualInventoryView);
+                backToCylinderButton.interactable = canReturn;
             }
         }
 
-        private void RefreshWeight()
+        private void RefreshVolume()
         {
-            if (scaleController == null) return;
+            if (cylinderController == null) return;
 
-            if (weightDisplayText != null)
-                weightDisplayText.text = scaleController.GetDisplayString();
+            if (volumeDisplayText != null)
+                volumeDisplayText.text = cylinderController.GetDisplayString();
         }
     }
 }

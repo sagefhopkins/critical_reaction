@@ -1,4 +1,5 @@
 using Gameplay.Workstations.Scale;
+using Gameplay.Workstations.GraduatedCylinder;
 using UnityEngine;
 
 namespace Gameplay.Items
@@ -11,7 +12,8 @@ namespace Gameplay.Items
         Distillation,
         Synthesis,
         Extraction,
-        Weighing
+        Weighing,
+        Volumetric
     }
 
     [CreateAssetMenu(menuName = "Items/Recipe", fileName = "Recipe")]
@@ -40,6 +42,11 @@ namespace Gameplay.Items
         [SerializeField] private float massTolerance = 0.5f;
         [SerializeField] private WeightUnit requiredWeightUnit = WeightUnit.Grams;
 
+        [Header("Volume Requirements (for Volumetric recipes)")]
+        [SerializeField] private float targetVolume = 50f;
+        [SerializeField] private float volumeTolerance = 1f;
+        [SerializeField] private VolumeUnit requiredVolumeUnit = VolumeUnit.Milliliters;
+
         public string RecipeName => recipeName;
         public RecipeType Type => recipeType;
         public LabItem[] Ingredients => ingredients;
@@ -51,6 +58,9 @@ namespace Gameplay.Items
         public float TargetMass => targetMass;
         public float MassTolerance => massTolerance;
         public WeightUnit RequiredWeightUnit => requiredWeightUnit;
+        public float TargetVolume => targetVolume;
+        public float VolumeTolerance => volumeTolerance;
+        public VolumeUnit RequiredVolumeUnit => requiredVolumeUnit;
 
         public bool IsTemperatureValid(float temperature)
         {
