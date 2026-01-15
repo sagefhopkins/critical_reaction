@@ -1,6 +1,7 @@
 using System;
 using Unity.Netcode;
 using UnityEngine;
+using UX.Options;
 
 public class PlayerController : NetworkBehaviour
 {
@@ -109,10 +110,10 @@ public class PlayerController : NetworkBehaviour
         float x = 0f;
         float y = 0f;
 
-        bool left  = Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow);
-        bool right = Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow);
-        bool down  = Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow);
-        bool up    = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow);
+        bool left = InputSettings.Instance != null ? InputSettings.Instance.IsLeftPressed() : Input.GetKey(KeyCode.A);
+        bool right = InputSettings.Instance != null ? InputSettings.Instance.IsRightPressed() : Input.GetKey(KeyCode.D);
+        bool down = InputSettings.Instance != null ? InputSettings.Instance.IsBackPressed() : Input.GetKey(KeyCode.S);
+        bool up = InputSettings.Instance != null ? InputSettings.Instance.IsForwardPressed() : Input.GetKey(KeyCode.W);
 
         if (left) x = -1f;
         else if (right) x = 1f;
@@ -120,7 +121,6 @@ public class PlayerController : NetworkBehaviour
         if (down) y = -1f;
         else if (up) y = 1f;
 
-        // No diagonals: choose horizontal first, otherwise vertical.
         if (x != 0f && y != 0f)
             y = 0f;
 

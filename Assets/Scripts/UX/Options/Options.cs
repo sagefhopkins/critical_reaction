@@ -219,7 +219,8 @@ namespace UX.Options
                             if (editor != null)
                             {
                                 editor.SetOptions(this);
-                                editor.Open(controls);
+                                Controls current = InputSettings.Instance != null ? InputSettings.Instance.Controls : controls;
+                                editor.Open(current);
                             }
 
                             OpenMenu(rebindMenu);
@@ -527,6 +528,8 @@ namespace UX.Options
         public void SetControls(Controls updated)
         {
             controls = updated;
+            if (InputSettings.Instance != null)
+                InputSettings.Instance.SetControls(updated);
         }
     }
 
