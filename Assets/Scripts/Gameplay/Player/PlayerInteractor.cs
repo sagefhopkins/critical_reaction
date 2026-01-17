@@ -15,12 +15,15 @@ namespace Gameplay.Player
 
         private readonly List<StorageRack> racksInRange = new List<StorageRack>(8);
         private readonly List<Workstation> workstationsInRange = new List<Workstation>(8);
+        private readonly List<DeliveryPoint> deliveryPointsInRange = new List<DeliveryPoint>(4);
 
         private StorageRack currentRack;
         private Workstation currentWorkstation;
+        private DeliveryPoint currentDeliveryPoint;
 
         private StorageRackContextPrompt currentRackPrompt;
         private WorkstationContextPrompt currentWorkstationPrompt;
+        private DeliveryPointContextPrompt currentDeliveryPrompt;
 
         private void Awake()
         {
@@ -64,6 +67,7 @@ namespace Gameplay.Player
         {
             StorageRack nextRack = FindClosestRack();
             Workstation nextWorkstation = FindClosestWorkstation();
+            DeliveryPoint nextDelivery = FindClosestDeliveryPoint();
 
             float rackDist = nextRack != null
                 ? ((Vector2)nextRack.transform.position - (Vector2)transform.position).sqrMagnitude
@@ -73,33 +77,58 @@ namespace Gameplay.Player
                 ? ((Vector2)nextWorkstation.transform.position - (Vector2)transform.position).sqrMagnitude
                 : float.MaxValue;
 
-            if (rackDist <= workstationDist && nextRack != null)
+            float deliveryDist = nextDelivery != null
+                ? ((Vector2)nextDelivery.transform.position - (Vector2)transform.position).sqrMagnitude
+                : float.MaxValue;
+
+            float minDist = Mathf.Min(rackDist, Mathf.Min(workstationDist, deliveryDist));
+
+            if (minDist == float.MaxValue)
             {
-                if (nextRack != currentRack || currentWorkstation != null)
+                if (currentRack != null || currentWorkstation != null || currentDeliveryPoint != null)
+                {
+                    currentRack = null;
+                    currentWorkstation = null;
+                    currentDeliveryPoint = null;
+                    ClearAllPrompts();
+                }
+                return;
+            }
+
+            if (minDist == rackDist && nextRack != null)
+            {
+                if (nextRack != currentRack || currentWorkstation != null || currentDeliveryPoint != null)
                 {
                     currentRack = nextRack;
                     currentWorkstation = null;
+                    currentDeliveryPoint = null;
                     SetRackPrompt(currentRack);
                     SetWorkstationPrompt(null);
+                    SetDeliveryPrompt(null);
                 }
             }
-            else if (nextWorkstation != null)
+            else if (minDist == workstationDist && nextWorkstation != null)
             {
-                if (nextWorkstation != currentWorkstation || currentRack != null)
+                if (nextWorkstation != currentWorkstation || currentRack != null || currentDeliveryPoint != null)
                 {
                     currentWorkstation = nextWorkstation;
                     currentRack = null;
+                    currentDeliveryPoint = null;
                     SetWorkstationPrompt(currentWorkstation);
                     SetRackPrompt(null);
+                    SetDeliveryPrompt(null);
                 }
             }
-            else
+            else if (minDist == deliveryDist && nextDelivery != null)
             {
-                if (currentRack != null || currentWorkstation != null)
+                if (nextDelivery != currentDeliveryPoint || currentRack != null || currentWorkstation != null)
                 {
+                    currentDeliveryPoint = nextDelivery;
                     currentRack = null;
                     currentWorkstation = null;
-                    ClearAllPrompts();
+                    SetDeliveryPrompt(currentDeliveryPoint);
+                    SetRackPrompt(null);
+                    SetWorkstationPrompt(null);
                 }
             }
         }
@@ -107,6 +136,13 @@ namespace Gameplay.Player
         private void TryInteract()
         {
             if (carry == null) return;
+
+            if (currentDeliveryPoint != null)
+            {
+                currentDeliveryPoint.TryDeliver(carry);
+                return;
+            }
+
             if (InteractionMenus.Instance == null) return;
 
             if (currentRack != null)
@@ -153,6 +189,21 @@ namespace Gameplay.Player
                 currentWorkstationPrompt.Show();
         }
 
+        private void SetDeliveryPrompt(DeliveryPoint delivery)
+        {
+            if (currentDeliveryPrompt != null)
+                currentDeliveryPrompt.Hide();
+
+            currentDeliveryPrompt = null;
+
+            if (delivery == null)
+                return;
+
+            currentDeliveryPrompt = delivery.GetComponentInChildren<DeliveryPointContextPrompt>(true);
+            if (currentDeliveryPrompt != null)
+                currentDeliveryPrompt.Show();
+        }
+
         private void ClearAllPrompts()
         {
             if (currentRackPrompt != null)
@@ -161,8 +212,12 @@ namespace Gameplay.Player
             if (currentWorkstationPrompt != null)
                 currentWorkstationPrompt.Hide();
 
+            if (currentDeliveryPrompt != null)
+                currentDeliveryPrompt.Hide();
+
             currentRackPrompt = null;
             currentWorkstationPrompt = null;
+            currentDeliveryPrompt = null;
         }
 
         private void OnTriggerEnter2D(Collider2D other)
@@ -176,6 +231,10 @@ namespace Gameplay.Player
             Workstation workstation = other.GetComponentInParent<Workstation>();
             if (workstation != null && !workstationsInRange.Contains(workstation))
                 workstationsInRange.Add(workstation);
+
+            DeliveryPoint delivery = other.GetComponentInParent<DeliveryPoint>();
+            if (delivery != null && !deliveryPointsInRange.Contains(delivery))
+                deliveryPointsInRange.Add(delivery);
         }
 
         private void OnTriggerExit2D(Collider2D other)
@@ -203,6 +262,18 @@ namespace Gameplay.Player
                 {
                     currentWorkstation = null;
                     SetWorkstationPrompt(null);
+                }
+            }
+
+            DeliveryPoint delivery = other.GetComponentInParent<DeliveryPoint>();
+            if (delivery != null)
+            {
+                deliveryPointsInRange.Remove(delivery);
+
+                if (delivery == currentDeliveryPoint)
+                {
+                    currentDeliveryPoint = null;
+                    SetDeliveryPrompt(null);
                 }
             }
         }
@@ -251,6 +322,28 @@ namespace Gameplay.Player
             return best;
         }
 
+        private DeliveryPoint FindClosestDeliveryPoint()
+        {
+            DeliveryPoint best = null;
+            float bestD = float.MaxValue;
+            Vector2 p = transform.position;
+
+            for (int i = 0; i < deliveryPointsInRange.Count; i++)
+            {
+                DeliveryPoint d = deliveryPointsInRange[i];
+                if (d == null) continue;
+
+                float dist = ((Vector2)d.transform.position - p).sqrMagnitude;
+                if (dist < bestD)
+                {
+                    bestD = dist;
+                    best = d;
+                }
+            }
+
+            return best;
+        }
+
         private void PruneNulls()
         {
             for (int i = racksInRange.Count - 1; i >= 0; i--)
@@ -263,6 +356,12 @@ namespace Gameplay.Player
             {
                 if (workstationsInRange[i] == null)
                     workstationsInRange.RemoveAt(i);
+            }
+
+            for (int i = deliveryPointsInRange.Count - 1; i >= 0; i--)
+            {
+                if (deliveryPointsInRange[i] == null)
+                    deliveryPointsInRange.RemoveAt(i);
             }
         }
     }

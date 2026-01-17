@@ -1,8 +1,9 @@
+using Gameplay.Coop;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-    public class CoopGameStarter : NetworkBehaviour
+public class CoopGameStarter : NetworkBehaviour
     {
         [SerializeField] private string gameplaySceneName = "CoopGame";
         private int pendingLevelId = -1;
