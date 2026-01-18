@@ -16,8 +16,8 @@ For this capstone, the **MVP** is defined as:
 
 - [x] Being able to **start the game**.
 - [x] Being able to **load a level/map and spawn player characters**.
-- [ ] Being able to **receive an order**.
-- [ ] Being able to **fill an order** and have the game recognize completion.
+- [x] Being able to **receive an order**.
+- [x] Being able to **fill an order** and have the game recognize completion.
 
 If all four of these are working end-to-end, the core loop of Critical Reaction is considered minimally complete.
 
@@ -198,12 +198,12 @@ cd critical-reaction
   - [x] Scale (Measurement Bench with particle physics)
   - [ ] Burner (Heating/Mixing station)
   - [x] Storage Rack
-  - [ ] Delivery Zone
-- [ ] End-to-end order flow:
-  - [ ] Receive order
-  - [ ] Produce product
-  - [ ] Deliver required quantity
-  - [ ] Trigger win/lose states
+  - [x] Delivery Zone
+- [x] End-to-end order flow:
+  - [x] Receive order
+  - [x] Produce product
+  - [x] Deliver required quantity
+  - [x] Trigger win/lose states
 
 ### Phase 2 – Benzoic Acid Campaign
 
