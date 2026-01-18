@@ -13,7 +13,10 @@ namespace Gameplay.Coop
         public event Action<string> OnAlert;
 
         [Header("Level Settings")]
+        [SerializeField] private LevelDatabase levelDatabase;
         [SerializeField] private float levelTimeLimit = 300f;
+        [SerializeField] private bool autoStartLevel = true;
+        [SerializeField] private int autoStartLevelId = 0;
 
         public NetworkVariable<int> LevelId = new NetworkVariable<int>(-1);
 
@@ -41,14 +44,24 @@ namespace Gameplay.Coop
             NetworkVariableWritePermission.Server
         );
 
+        private NetworkVariable<Unity.Collections.FixedString64Bytes> targetCompoundName = new NetworkVariable<Unity.Collections.FixedString64Bytes>(
+            "Benzoic Acid",
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+        );
+
+        private LevelConfig currentLevelConfig;
+
         public float ElapsedTime => elapsedTime.Value;
         public float RemainingTime => Mathf.Max(0f, levelTimeLimit - elapsedTime.Value);
         public float TimeLimit => levelTimeLimit;
         public int DeliveredCount => deliveredCount.Value;
         public int TargetCount => targetCount.Value;
+        public string TargetCompoundName => targetCompoundName.Value.ToString();
         public bool IsLevelActive => levelActive.Value;
         public bool IsLevelComplete => deliveredCount.Value >= targetCount.Value;
         public bool IsTimeUp => elapsedTime.Value >= levelTimeLimit;
+        public LevelConfig CurrentLevelConfig => currentLevelConfig;
 
         private void Awake()
         {
@@ -75,6 +88,11 @@ namespace Gameplay.Coop
             if (LevelId.Value >= 0)
             {
                 Begin(LevelId.Value);
+            }
+            else if (IsServer && autoStartLevel)
+            {
+                LevelId.Value = autoStartLevelId;
+                Begin(autoStartLevelId);
             }
             else
             {
@@ -131,6 +149,12 @@ namespace Gameplay.Coop
             levelTimeLimit = timeLimit;
         }
 
+        public void SetTargetCompoundServer(string compoundName)
+        {
+            if (!IsServer) return;
+            targetCompoundName.Value = compoundName;
+        }
+
         private void OnLevelChanged(int previous, int next)
         {
             if (next < 0) return;
@@ -144,10 +168,33 @@ namespace Gameplay.Coop
 
             if (IsServer)
             {
+                LoadLevelConfig(levelId);
                 elapsedTime.Value = 0f;
                 deliveredCount.Value = 0;
                 levelActive.Value = true;
             }
+        }
+
+        private void LoadLevelConfig(int levelId)
+        {
+            if (levelDatabase == null)
+            {
+                Debug.LogWarning("No LevelDatabase assigned to CoopGameManager");
+                return;
+            }
+
+            if (!levelDatabase.TryGetLevel(levelId, out LevelConfig config))
+            {
+                Debug.LogWarning($"Level {levelId} not found in database");
+                return;
+            }
+
+            currentLevelConfig = config;
+            levelTimeLimit = config.TimeLimit;
+            targetCount.Value = config.TotalTargetCount;
+            targetCompoundName.Value = config.PrimaryTargetName;
+
+            Debug.Log($"Loaded level config: {config.LevelName}, Time: {config.TimeLimit}s, Target: {config.PrimaryTargetName} x{config.TotalTargetCount}");
         }
 
         public void RegisterDelivery(int amount = 1)
@@ -162,12 +209,12 @@ namespace Gameplay.Coop
             if (!IsServer) return;
             if (!levelActive.Value) return;
 
+            bool wasComplete = IsLevelComplete;
             deliveredCount.Value += amount;
 
-            if (IsLevelComplete)
+            if (!wasComplete && IsLevelComplete)
             {
-                levelActive.Value = false;
-                BroadcastAlertClientRpc("Level Complete!");
+                BroadcastAlertClientRpc("Target reached! Keep going!");
             }
         }
 

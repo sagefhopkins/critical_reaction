@@ -18,7 +18,6 @@ namespace UX.HUD
 
         [Header("Delivery Progress")]
         [SerializeField] private TMP_Text deliveryText;
-        [SerializeField] private string deliveryFormat = "{0} / {1}";
 
         [Header("Alerts")]
         [SerializeField] private TMP_Text alertText;
@@ -124,13 +123,14 @@ namespace UX.HUD
             if (deliveryText == null) return;
             if (CoopGameManager.Instance == null)
             {
-                deliveryText.text = string.Format(deliveryFormat, 0, 0);
+                deliveryText.text = "---: 0 / 0";
                 return;
             }
 
+            string compound = CoopGameManager.Instance.TargetCompoundName;
             int delivered = CoopGameManager.Instance.DeliveredCount;
             int target = CoopGameManager.Instance.TargetCount;
-            deliveryText.text = string.Format(deliveryFormat, delivered, target);
+            deliveryText.text = $"{compound}: {delivered} / {target}";
         }
 
         public void ShowAlert(string message)
