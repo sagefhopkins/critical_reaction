@@ -10,9 +10,13 @@ namespace Gameplay.Workstations.Scale
         [SerializeField] private Color particleColor = Color.white;
         [SerializeField] private Sprite particleSprite;
 
+        [Header("pH Properties")]
+        [SerializeField] private float phValue = 7f;
+
         public string ChemicalName => chemicalName;
         public float ParticleMass => particleMass;
         public Color ParticleColor => particleColor;
         public Sprite ParticleSprite => particleSprite;
+        public float PHValue => phValue;
     }
 }

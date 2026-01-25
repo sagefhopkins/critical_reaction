@@ -13,7 +13,16 @@ namespace Gameplay.Items
         Synthesis,
         Extraction,
         Weighing,
-        Volumetric
+        Volumetric,
+        Concentration
+    }
+
+    [System.Serializable]
+    public class ConcentrationRequirement
+    {
+        public LabItem Chemical;
+        public float TargetConcentration;
+        public float Tolerance;
     }
 
     [CreateAssetMenu(menuName = "Items/Recipe", fileName = "Recipe")]
@@ -47,6 +56,12 @@ namespace Gameplay.Items
         [SerializeField] private float volumeTolerance = 1f;
         [SerializeField] private VolumeUnit requiredVolumeUnit = VolumeUnit.Milliliters;
 
+        [Header("Concentration Requirements (for Concentration recipes)")]
+        [SerializeField] private ConcentrationRequirement[] concentrationRequirements;
+        [SerializeField] private float phTarget = 7f;
+        [SerializeField] private float phTolerance = 0.5f;
+        [SerializeField] private bool requiresPHCheck = false;
+
         public string RecipeName => recipeName;
         public RecipeType Type => recipeType;
         public LabItem[] Ingredients => ingredients;
@@ -61,6 +76,10 @@ namespace Gameplay.Items
         public float TargetVolume => targetVolume;
         public float VolumeTolerance => volumeTolerance;
         public VolumeUnit RequiredVolumeUnit => requiredVolumeUnit;
+        public ConcentrationRequirement[] ConcentrationRequirements => concentrationRequirements;
+        public float PHTarget => phTarget;
+        public float PHTolerance => phTolerance;
+        public bool RequiresPHCheck => requiresPHCheck;
 
         public bool IsTemperatureValid(float temperature)
         {

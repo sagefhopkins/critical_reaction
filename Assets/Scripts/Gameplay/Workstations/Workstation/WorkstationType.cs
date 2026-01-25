@@ -9,6 +9,7 @@ namespace Gameplay.Workstations
         Distiller,
         Freezer,
         Scale,
-        GraduatedCylinder
+        GraduatedCylinder,
+        LiquidMeasurementBench
     }
 }
