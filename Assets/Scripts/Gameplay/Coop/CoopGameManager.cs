@@ -11,6 +11,8 @@ namespace Gameplay.Coop
         public event Action OnTimerUpdated;
         public event Action OnDeliveryUpdated;
         public event Action<string> OnAlert;
+        public event Action OnLevelFailed;
+        public event Action OnLevelWon;
 
         [Header("Level Settings")]
         [SerializeField] private LevelDatabase levelDatabase;
@@ -51,6 +53,7 @@ namespace Gameplay.Coop
         );
 
         private LevelConfig currentLevelConfig;
+        private GameObject currentLayoutInstance;
 
         public float ElapsedTime => elapsedTime.Value;
         public float RemainingTime => Mathf.Max(0f, levelTimeLimit - elapsedTime.Value);
@@ -85,7 +88,14 @@ namespace Gameplay.Coop
             elapsedTime.OnValueChanged += HandleTimerChanged;
             deliveredCount.OnValueChanged += HandleDeliveryChanged;
 
-            if (LevelId.Value >= 0)
+            if (IsServer && PauseManager.PendingNextLevelId >= 0)
+            {
+                int nextLevel = PauseManager.PendingNextLevelId;
+                PauseManager.PendingNextLevelId = -1;
+                LevelId.Value = nextLevel;
+                Begin(nextLevel);
+            }
+            else if (LevelId.Value >= 0)
             {
                 Begin(LevelId.Value);
             }
@@ -114,10 +124,13 @@ namespace Gameplay.Coop
 
             elapsedTime.Value += Time.deltaTime;
 
-            if (IsTimeUp && !IsLevelComplete)
+            if (IsTimeUp)
             {
                 levelActive.Value = false;
-                BroadcastAlertClientRpc("Time's up!");
+                if (IsLevelComplete)
+                    BroadcastLevelWonClientRpc();
+                else
+                    BroadcastLevelFailedClientRpc();
             }
         }
 
@@ -194,7 +207,48 @@ namespace Gameplay.Coop
             targetCount.Value = config.TotalTargetCount;
             targetCompoundName.Value = config.PrimaryTargetName;
 
+            SpawnLayout(config.LayoutPrefab);
+
             Debug.Log($"Loaded level config: {config.LevelName}, Time: {config.TimeLimit}s, Target: {config.PrimaryTargetName} x{config.TotalTargetCount}");
+        }
+
+        private void SpawnLayout(GameObject layoutPrefab)
+        {
+            if (currentLayoutInstance != null)
+            {
+                DespawnAllNetworkObjects(currentLayoutInstance);
+                Destroy(currentLayoutInstance);
+                currentLayoutInstance = null;
+            }
+
+            if (layoutPrefab == null)
+            {
+                Debug.LogWarning("No layout prefab assigned for this level");
+                return;
+            }
+
+            currentLayoutInstance = Instantiate(layoutPrefab);
+            SpawnAllNetworkObjects(currentLayoutInstance);
+        }
+
+        private void SpawnAllNetworkObjects(GameObject root)
+        {
+            var networkObjects = root.GetComponentsInChildren<NetworkObject>(true);
+            foreach (var netObj in networkObjects)
+            {
+                if (!netObj.IsSpawned)
+                    netObj.Spawn();
+            }
+        }
+
+        private void DespawnAllNetworkObjects(GameObject root)
+        {
+            var networkObjects = root.GetComponentsInChildren<NetworkObject>(true);
+            foreach (var netObj in networkObjects)
+            {
+                if (netObj != null && netObj.IsSpawned)
+                    netObj.Despawn();
+            }
         }
 
         public void RegisterDelivery(int amount = 1)
@@ -235,6 +289,18 @@ namespace Gameplay.Coop
         private void BroadcastAlertClientRpc(string message)
         {
             OnAlert?.Invoke(message);
+        }
+
+        [ClientRpc]
+        private void BroadcastLevelFailedClientRpc()
+        {
+            OnLevelFailed?.Invoke();
+        }
+
+        [ClientRpc]
+        private void BroadcastLevelWonClientRpc()
+        {
+            OnLevelWon?.Invoke();
         }
     }
 }
