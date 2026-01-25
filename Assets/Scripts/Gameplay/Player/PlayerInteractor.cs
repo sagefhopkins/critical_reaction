@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Gameplay.Coop;
 using Gameplay.Workstations;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.WSA;
 using UX;
 using UX.Options;
 
@@ -12,6 +14,7 @@ namespace Gameplay.Player
     {
         [Header("Dependencies")]
         [SerializeField] private PlayerCarry carry;
+        [SerializeField] private float confirmHoldTime = 0.35f;
 
         private readonly List<StorageRack> racksInRange = new List<StorageRack>(8);
         private readonly List<Workstation> workstationsInRange = new List<Workstation>(8);
@@ -24,6 +27,8 @@ namespace Gameplay.Player
         private StorageRackContextPrompt currentRackPrompt;
         private WorkstationContextPrompt currentWorkstationPrompt;
         private DeliveryPointContextPrompt currentDeliveryPrompt;
+        private float confirmTimer = 0f;
+        private bool hasConfirmed = false;
 
         private void Awake()
         {
@@ -56,10 +61,20 @@ namespace Gameplay.Player
             if (InteractionMenus.Instance != null && InteractionMenus.Instance.AnyMenuOpen)
                 return;
 
-            bool interact = InputSettings.Instance != null ? InputSettings.Instance.IsInteractPressed() : Input.GetKeyDown(KeyCode.E);
-            if (interact)
+           if (Input.GetKey(KeyCode.E))
+           {
+                confirmTimer += Time.unscaledDeltaTime;
+
+                if (!hasConfirmed && confirmTimer >= confirmHoldTime)
+                {
+                    hasConfirmed = true;
+                    TryInteract();
+                }
+           } 
+            else
             {
-                TryInteract();
+                confirmTimer = 0f;
+                hasConfirmed = false;
             }
         }
 
