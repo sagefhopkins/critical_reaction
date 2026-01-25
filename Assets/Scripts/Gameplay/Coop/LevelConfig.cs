@@ -28,6 +28,7 @@ namespace Gameplay.Coop
         [Header("Level Info")]
         [SerializeField] private int levelId;
         [SerializeField] private string levelName;
+        [SerializeField] private GameObject layoutPrefab;
 
         [Header("Time")]
         [SerializeField] private float timeLimit = 300f;
@@ -40,6 +41,7 @@ namespace Gameplay.Coop
 
         public int LevelId => levelId;
         public string LevelName => levelName;
+        public GameObject LayoutPrefab => layoutPrefab;
         public float TimeLimit => timeLimit;
         public DeliveryTarget[] DeliveryTargets => deliveryTargets;
         public StarThreshold StarThresholds => starThresholds;

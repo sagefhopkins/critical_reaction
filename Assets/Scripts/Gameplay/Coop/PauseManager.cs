@@ -8,6 +8,7 @@ namespace Gameplay.Coop
     public class PauseManager : NetworkBehaviour
     {
         public static PauseManager Instance { get; private set; }
+        public static int PendingNextLevelId { get; set; } = -1;
 
         public event Action<bool> OnPauseStateChanged;
 
@@ -83,6 +84,12 @@ namespace Gameplay.Coop
             RequestQuitServerRpc();
         }
 
+        public void RequestNextLevel()
+        {
+            if (!NetworkManager.IsListening) return;
+            RequestNextLevelServerRpc();
+        }
+
         [ServerRpc(RequireOwnership = false)]
         private void RequestPauseServerRpc(ServerRpcParams rpcParams = default)
         {
@@ -129,6 +136,35 @@ namespace Gameplay.Coop
             }
 
             UnityEngine.SceneManagement.SceneManager.LoadScene("Main Menu");
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        private void RequestNextLevelServerRpc(ServerRpcParams rpcParams = default)
+        {
+            if (!IsServer) return;
+
+            isPaused.Value = false;
+
+            int nextLevelId = 0;
+            if (CoopGameManager.Instance != null)
+            {
+                nextLevelId = CoopGameManager.Instance.LevelId.Value + 1;
+            }
+
+            PendingNextLevelId = nextLevelId;
+            SetPendingLevelClientRpc(nextLevelId);
+
+            if (NetworkManager.SceneManager != null)
+            {
+                string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+                NetworkManager.SceneManager.LoadScene(currentScene, UnityEngine.SceneManagement.LoadSceneMode.Single);
+            }
+        }
+
+        [ClientRpc]
+        private void SetPendingLevelClientRpc(int levelId)
+        {
+            PendingNextLevelId = levelId;
         }
     }
 }
