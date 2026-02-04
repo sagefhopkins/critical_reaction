@@ -15,7 +15,7 @@ MonoBehaviour:
   levelId: 0
   levelName: Standard Solution Setup
   layoutPrefab: {fileID: 4313882351668404019, guid: fe90b5358fb1173378e8c3bdacaf3719, type: 3}
-  timeLimit: 300
+  timeLimit: 60
   deliveryTargets:
   - item: {fileID: 11400000, guid: 32b7219d0e32440e69a983a195d31684, type: 2}
     quantity: 5
