@@ -26,55 +26,55 @@ If all four of these are working end-to-end, the core loop of Critical Reaction 
 
 For this capstone, the **Beta Taskks** are defined as :
 
-### [Week One - Core Systems and Data Models]
+### Week One - Core Systems and Data Models
 
-- [] Implement waste/invalid batch handling
-- [] Implement order definition model (RequiredProductId, RequiredQuantity, TimeLimit)
-- [] Build container item model (contents, volume, temperature, step stage)
-- [] Implement recipe step state machine (Empty -> FinalizedProduct/Invalid)
-- [] Implement multi-timer architecture (global order timer + per step timers)
-- [] Implement time-sensitive reaction window evaluation
-- [] Implement measurement accuracy tolerance system
-- [] Implement temperature control model (heat/cool rate + target range)
+- [ ] Implement waste/invalid batch handling
+- [ ] Implement order definition model (RequiredProductId, RequiredQuantity, TimeLimit)
+- [ ] Build container item model (contents, volume, temperature, step stage)
+- [ ] Implement recipe step state machine (Empty -> FinalizedProduct/Invalid)
+- [ ] Implement multi-timer architecture (global order timer + per step timers)
+- [ ] Implement time-sensitive reaction window evaluation
+- [ ] Implement measurement accuracy tolerance system
+- [ ] Implement temperature control model (heat/cool rate + target range)
 
-### [Week Two - Station Implementations]
+### Week Two - Station Implementations
 
-- [] Implement Measurement Bench Station (Raw -> measured reagent)
-- [] Implement Liquid Measurement Station (Raw -> measured volume)
-- [] Implement Hot Plate Station (temperature-based step progression)
-- [] Implement Cooling Bath Station (cooling + stablization)
-- [] Implement Wash/Sink Station (wash mixture to reduce impurity)
-- [] Implement Distillation Rig Station (solvent removal -> concentrated product)
-- [] Implement Titration Bench Station (validate strength/purity)
+- [ ] Implement Measurement Bench Station (Raw -> measured reagent)
+- [ ] Implement Liquid Measurement Station (Raw -> measured volume)
+- [ ] Implement Hot Plate Station (temperature-based step progression)
+- [ ] Implement Cooling Bath Station (cooling + stablization)
+- [ ] Implement Wash/Sink Station (wash mixture to reduce impurity)
+- [ ] Implement Distillation Rig Station (solvent removal -> concentrated product)
+- [ ] Implement Titration Bench Station (validate strength/purity)
 - [x] Implement Storage Rack (Shared team inventory for intermediates)
-- [] Implement Input Shelves (Unlimited reagents for Beta)
-- [] Implement Waste Bin (discard invalid batches; scoring impact hook)
-- [] Implement Spill Zone Hazard (slow + cleanup; scoring impact hook)
+- [ ] Implement Input Shelves (Unlimited reagents for Beta)
+- [ ] Implement Waste Bin (discard invalid batches; scoring impact hook)
+- [ ] Implement Spill Zone Hazard (slow + cleanup; scoring impact hook)
 
-### [Week Three - Player Experience, UI and Level Design]
+### Week Three - Player Experience, UI and Level Design
 
-- [] Implement contextual button prompts for Interactions
-- [] Implement player indicators (outline + name tag per technician)
-- [] Implement station/container readout panel (temp, step timer, fill level, ready state)
+- [ ] Implement contextual button prompts for Interactions
+- [ ] Implement player indicators (outline + name tag per technician)
+- [ ] Implement station/container readout panel (temp, step timer, fill level, ready state)
 - [x] Implement quick alert strip
 - [x] Implement Campaign Map screen
 - [x] Implement Options Menu (Audio, Display)
-- [] Build Level 1 Layout (stations + short looping pathing)
-- [] Implement Level 1 Parameters (4:00 timer, 250mL target)
-- [] Implement brine production interactions (measure + mix + saturation indicator)
-- [] Create reusable "level template" pipeline for future campaign levels
+- [ ] Build Level 1 Layout (stations + short looping pathing)
+- [ ] Implement Level 1 Parameters (4:00 timer, 250mL target)
+- [ ] Implement brine production interactions (measure + mix + saturation indicator)
+- [ ] Create reusable "level template" pipeline for future campaign levels
 
-### [Week Four - Campaign Progression and Multiplayer]
+### Week Four - Campaign Progression and Multiplayer
 
-- [] Implement campaign linear unlock rules
-- [] Implement medal/grade scoring (Stars / Bronze/Silver/Gold)
-- [] Implement save triggers (post-level + return to campaign map)
-- [] Implement saved data model (progress, best score/time, tutorial flags, settings)
-- [] Enforce "no mid-level save" ----------
-- [] Implement SQLite persistence layer (profiles + campaign progress)
-- [] Implement simultaneous station use rules + locking
-- [] Implement co-op role-emergence balancing instrumentation
-- [] Bugfix : Blank screen when backing out of lobby to main menu and reopening Coop menu
+- [ ] Implement campaign linear unlock rules
+- [ ] Implement medal/grade scoring (Stars / Bronze/Silver/Gold)
+- [ ] Implement save triggers (post-level + return to campaign map)
+- [ ] Implement saved data model (progress, best score/time, tutorial flags, settings)
+- [ ] Enforce "no mid-level save" ----------
+- [ ] Implement SQLite persistence layer (profiles + campaign progress)
+- [ ] Implement simultaneous station use rules + locking
+- [ ] Implement co-op role-emergence balancing instrumentation
+- [ ] Bugfix : Blank screen when backing out of lobby to main menu and reopening Coop menu
 ---
 
 ## Project Status
