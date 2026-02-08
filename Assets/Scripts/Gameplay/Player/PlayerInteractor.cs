@@ -61,6 +61,10 @@ namespace Gameplay.Player
             if (InteractionMenus.Instance != null && InteractionMenus.Instance.AnyMenuOpen)
                 return;
 
+            bool interact = InputSettings.Instance != null 
+                ? InputSettings.Instance.IsInteractPressed() 
+                : Input.GetKeyDown(KeyCode.E);
+
            if (Input.GetKey(KeyCode.E))
            {
                 confirmTimer += Time.unscaledDeltaTime;
