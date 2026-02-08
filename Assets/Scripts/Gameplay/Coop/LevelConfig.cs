@@ -8,13 +8,6 @@ namespace Gameplay.Coop
     public class LevelConfig : ScriptableObject
     {
         [Serializable]
-        public struct DeliveryTarget
-        {
-            public LabItem item;
-            public int quantity;
-        }
-
-        [Serializable]
         public struct StarThreshold
         {
             [Tooltip("Minimum deliveries for 1 star (usually same as target)")]
@@ -33,8 +26,8 @@ namespace Gameplay.Coop
         [Header("Time")]
         [SerializeField] private float timeLimit = 300f;
 
-        [Header("Objectives")]
-        [SerializeField] private DeliveryTarget[] deliveryTargets;
+        [Header("Orders")]
+        [SerializeField] private OrderDefinition[] orders;
 
         [Header("Scoring")]
         [SerializeField] private StarThreshold starThresholds;
@@ -43,18 +36,18 @@ namespace Gameplay.Coop
         public string LevelName => levelName;
         public GameObject LayoutPrefab => layoutPrefab;
         public float TimeLimit => timeLimit;
-        public DeliveryTarget[] DeliveryTargets => deliveryTargets;
         public StarThreshold StarThresholds => starThresholds;
+        public OrderDefinition[] Orders => orders;
 
         public int TotalTargetCount
         {
             get
             {
                 int total = 0;
-                if (deliveryTargets != null)
+                if (orders != null)
                 {
-                    foreach (var t in deliveryTargets)
-                        total += t.quantity;
+                    foreach (var o in orders)
+                        total += o.requiredQuantity;
                 }
                 return total;
             }
@@ -64,11 +57,11 @@ namespace Gameplay.Coop
         {
             get
             {
-                if (deliveryTargets == null || deliveryTargets.Length == 0)
+                if (orders == null || orders.Length == 0)
                     return "Unknown";
-                if (deliveryTargets[0].item == null)
+                if (orders[0].requiredProduct == null)
                     return "Unknown";
-                return deliveryTargets[0].item.DisplayName;
+                return orders[0].requiredProduct.DisplayName;
             }
         }
     }

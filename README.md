@@ -29,13 +29,13 @@ For this capstone, the **Beta Taskks** are defined as :
 ### Week One - Core Systems and Data Models
 
 - [ ] Implement waste/invalid batch handling
-- [ ] Implement order definition model (RequiredProductId, RequiredQuantity, TimeLimit)
-- [ ] Build container item model (contents, volume, temperature, step stage)
-- [ ] Implement recipe step state machine (Empty -> FinalizedProduct/Invalid)
+- [x] Implement order definition model (RequiredProductId, RequiredQuantity, TimeLimit)
+- [x] Build container item model (contents, volume, temperature, step stage)
+- [x] Implement recipe step state machine (Empty -> FinalizedProduct/Invalid)
 - [ ] Implement multi-timer architecture (global order timer + per step timers)
-- [ ] Implement time-sensitive reaction window evaluation
-- [ ] Implement measurement accuracy tolerance system
-- [ ] Implement temperature control model (heat/cool rate + target range)
+- [x] Implement time-sensitive reaction window evaluation
+- [x] Implement measurement accuracy tolerance system
+- [x] Implement temperature control model (heat/cool rate + target range)
 
 ### Week Two - Station Implementations
 
@@ -81,7 +81,7 @@ For this capstone, the **Beta Taskks** are defined as :
 
 - **Status:** Beta implementations
 - **MVP Progress:** 4 of 4 milestones complete
-- **Beta Progress:** 4 of 36 milestones complete
+- **Beta Progress:** 10 of 36 milestones complete
 
 Core systems work: movement, item carrying, storage racks, and the Scale workstation. Networking uses Unity Netcode with server-authoritative sync. Order/delivery system is next.
 
