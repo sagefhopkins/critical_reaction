@@ -65,7 +65,7 @@ namespace Gameplay.Player
                 ? InputSettings.Instance.IsInteractPressed() 
                 : Input.GetKeyDown(KeyCode.E);
 
-           if (Input.GetKey(KeyCode.E))
+           if (interact)
            {
                 confirmTimer += Time.unscaledDeltaTime;
 
