@@ -6,7 +6,6 @@ namespace Gameplay.Workstations
     {
         public bool IsWrongOrder { get; set; }
         public bool MissedTimeWindow { get; set; }
-
         public double MaxTemperature { get; set; }
         public double AllowedMaxTemperature { get; set; }
     }
