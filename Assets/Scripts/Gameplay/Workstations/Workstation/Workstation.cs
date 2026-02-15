@@ -17,11 +17,17 @@ namespace Gameplay.Workstations
         [Header("Item List")]
         [SerializeField] private LabItem[] items;
 
-        [Header("Recipe")]
-        [SerializeField] private Recipe assignedRecipe;
+        [Header("Recipes")]
+        [SerializeField] private Recipe[] recipes;
 
         [Header("Initial Contents (size 5)")]
         [SerializeField] private LabItem[] initialContents = new LabItem[SlotCount];
+
+        [Header("Completion Grace Period")]
+        [Tooltip("Seconds after completion before output degrades to Failed. 0 = no timeout.")]
+        [SerializeField] private float completionGracePeriod = 0f;
+
+        private float completedAtTime = -1f;
 
         public NetworkList<ushort> SlotItemIds { get; private set; }
 
@@ -37,18 +43,15 @@ namespace Gameplay.Workstations
             NetworkVariableWritePermission.Server
         );
 
-        private NetworkVariable<ushort> outputSlotId = new NetworkVariable<ushort>(
-            NoneId,
-            NetworkVariableReadPermission.Everyone,
-            NetworkVariableWritePermission.Server
-        );
+        public NetworkList<ushort> OutputSlotIds { get; private set; }
+
+        private Recipe matchedRecipe;
 
         public WorkstationType Type => workstationType;
         public WorkState CurrentWorkState => workState.Value;
         public float WorkProgress => workProgress.Value;
-        public Recipe AssignedRecipe => assignedRecipe;
-        public ushort OutputSlotId => outputSlotId.Value;
-        public bool HasOutput => outputSlotId.Value != NoneId;
+        public Recipe AssignedRecipe => matchedRecipe;
+        public Recipe[] Recipes => recipes;
 
         public event Action OnWorkStateChanged;
         public event Action OnProgressChanged;
@@ -62,6 +65,11 @@ namespace Gameplay.Workstations
                 NetworkVariableReadPermission.Everyone,
                 NetworkVariableWritePermission.Server
             );
+            OutputSlotIds = new NetworkList<ushort>(
+                default,
+                NetworkVariableReadPermission.Everyone,
+                NetworkVariableWritePermission.Server
+            );
         }
 
         public override void OnNetworkSpawn()
@@ -69,11 +77,18 @@ namespace Gameplay.Workstations
             workState.OnValueChanged += HandleWorkStateChanged;
             workProgress.OnValueChanged += HandleProgressChanged;
             SlotItemIds.OnListChanged += HandleInventoryChanged;
-            outputSlotId.OnValueChanged += HandleOutputChanged;
+            OutputSlotIds.OnListChanged += HandleOutputChanged;
 
             if (IsServer)
             {
+                workState.Value = WorkState.Idle;
+                workProgress.Value = 0f;
+                matchedRecipe = null;
+                completedAtTime = -1f;
+                SlotItemIds.Clear();
+                OutputSlotIds.Clear();
                 EnsureSlotCountServer();
+                EnsureOutputSlotCountServer();
                 InitializeFromEditorIfEmptyServer();
             }
         }
@@ -83,11 +98,33 @@ namespace Gameplay.Workstations
             workState.OnValueChanged -= HandleWorkStateChanged;
             workProgress.OnValueChanged -= HandleProgressChanged;
             SlotItemIds.OnListChanged -= HandleInventoryChanged;
-            outputSlotId.OnValueChanged -= HandleOutputChanged;
+            OutputSlotIds.OnListChanged -= HandleOutputChanged;
+        }
+
+        private void Update()
+        {
+            if (!IsServer) return;
+            if (completionGracePeriod <= 0f) return;
+            if (workState.Value != WorkState.Completed) return;
+            if (completedAtTime < 0f) return;
+
+            if (Time.time - completedAtTime >= completionGracePeriod)
+            {
+                FailWorkServer();
+                completedAtTime = -1f;
+            }
         }
 
         private void HandleWorkStateChanged(WorkState prev, WorkState next)
         {
+            if (IsServer)
+            {
+                if (next == WorkState.Completed)
+                    completedAtTime = Time.time;
+                else
+                    completedAtTime = -1f;
+            }
+
             OnWorkStateChanged?.Invoke();
         }
 
@@ -101,7 +138,7 @@ namespace Gameplay.Workstations
             OnInventoryChanged?.Invoke();
         }
 
-        private void HandleOutputChanged(ushort prev, ushort next)
+        private void HandleOutputChanged(NetworkListEvent<ushort> evt)
         {
             OnOutputChanged?.Invoke();
         }
@@ -182,23 +219,62 @@ namespace Gameplay.Workstations
             return false;
         }
 
+        public bool CanAcceptItemClient(ushort itemId)
+        {
+            if (!HasEmptySlotClient()) return false;
+            if (recipes == null || recipes.Length == 0) return false;
+
+            ushort[] currentIds = new ushort[SlotCount];
+            for (int i = 0; i < SlotCount; i++)
+                currentIds[i] = GetSlotId(i);
+
+            for (int r = 0; r < recipes.Length; r++)
+            {
+                if (recipes[r] != null && recipes[r].IsValidIngredient(itemId, currentIds, SlotCount))
+                    return true;
+            }
+
+            return false;
+        }
+
+        public bool HasOccupiedSlotClient()
+        {
+            if (SlotItemIds == null) return false;
+
+            for (int i = 0; i < SlotCount; i++)
+            {
+                if (i < SlotItemIds.Count && SlotItemIds[i] != NoneId)
+                    return true;
+            }
+
+            return false;
+        }
+
         private Sprite GetSpriteById(ushort id)
         {
             if (id == NoneId) return null;
-            if (items == null)
+
+            if (items != null)
             {
-                Debug.LogWarning($"GetSpriteById: items array is null, cannot find sprite for id {id}");
-                return null;
+                for (int i = 0; i < items.Length; i++)
+                {
+                    LabItem it = items[i];
+                    if (it != null && it.Id == id)
+                        return it.Sprite;
+                }
             }
 
-            for (int i = 0; i < items.Length; i++)
+            if (recipes != null)
             {
-                LabItem it = items[i];
-                if (it != null && it.Id == id)
-                    return it.Sprite;
+                for (int r = 0; r < recipes.Length; r++)
+                {
+                    if (recipes[r] != null && recipes[r].OutputItem != null
+                        && recipes[r].OutputItem.Id == id)
+                        return recipes[r].OutputItem.Sprite;
+                }
             }
 
-            Debug.LogWarning($"GetSpriteById: Could not find item with id {id} in items array (length={items.Length})");
+            Debug.LogWarning($"GetSpriteById: Could not find item with id {id} in items or recipe outputs");
             return null;
         }
 
@@ -232,23 +308,89 @@ namespace Gameplay.Workstations
 
         #endregion
 
-        #region Output Slot
+        #region Output Slots
 
-        public Sprite GetOutputSprite()
-        {
-            return GetSpriteById(outputSlotId.Value);
-        }
-
-        public void SetOutputServer(ushort itemId)
+        private void EnsureOutputSlotCountServer()
         {
             if (!IsServer) return;
-            outputSlotId.Value = itemId;
+
+            if (OutputSlotIds.Count == 0)
+            {
+                for (int i = 0; i < SlotCount; i++)
+                    OutputSlotIds.Add(NoneId);
+                return;
+            }
+
+            while (OutputSlotIds.Count < SlotCount)
+                OutputSlotIds.Add(NoneId);
+
+            while (OutputSlotIds.Count > SlotCount)
+                OutputSlotIds.RemoveAt(OutputSlotIds.Count - 1);
+        }
+
+        public ushort GetOutputSlotId(int slotIndex)
+        {
+            if (OutputSlotIds == null) return NoneId;
+            if (slotIndex < 0 || slotIndex >= SlotCount) return NoneId;
+            if (OutputSlotIds.Count <= slotIndex) return NoneId;
+            return OutputSlotIds[slotIndex];
+        }
+
+        public Sprite GetOutputSpriteForSlot(int slotIndex)
+        {
+            return GetSpriteById(GetOutputSlotId(slotIndex));
+        }
+
+        public bool HasAnyOutput()
+        {
+            if (OutputSlotIds == null) return false;
+            for (int i = 0; i < SlotCount; i++)
+            {
+                if (i < OutputSlotIds.Count && OutputSlotIds[i] != NoneId)
+                    return true;
+            }
+            return false;
+        }
+
+        public bool HasEmptyOutputSlotServer()
+        {
+            if (OutputSlotIds == null) return false;
+            for (int i = 0; i < SlotCount; i++)
+            {
+                if (OutputSlotIds[i] == NoneId)
+                    return true;
+            }
+            return false;
+        }
+
+        public void SetOutputServer(int slotIndex, ushort itemId)
+        {
+            if (!IsServer) return;
+            if (slotIndex < 0 || slotIndex >= SlotCount) return;
+            EnsureOutputSlotCountServer();
+            OutputSlotIds[slotIndex] = itemId;
+        }
+
+        public int AddOutputServer(ushort itemId)
+        {
+            if (!IsServer) return -1;
+            EnsureOutputSlotCountServer();
+            for (int i = 0; i < SlotCount; i++)
+            {
+                if (OutputSlotIds[i] == NoneId)
+                {
+                    OutputSlotIds[i] = itemId;
+                    return i;
+                }
+            }
+            return -1;
         }
 
         public void ClearOutputServer()
         {
             if (!IsServer) return;
-            outputSlotId.Value = NoneId;
+            for (int i = 0; i < SlotCount; i++)
+                OutputSlotIds[i] = NoneId;
         }
 
         #endregion
@@ -260,14 +402,23 @@ namespace Gameplay.Workstations
             if (workState.Value != WorkState.Idle)
                 return false;
 
-            if (assignedRecipe == null)
+            if (recipes == null || recipes.Length == 0)
                 return false;
 
             ushort[] ids = new ushort[SlotCount];
             for (int i = 0; i < SlotCount; i++)
                 ids[i] = GetSlotId(i);
 
-            return assignedRecipe.CanCraftWith(ids, SlotCount);
+            for (int r = 0; r < recipes.Length; r++)
+            {
+                if (recipes[r] != null && recipes[r].CanCraftWith(ids, SlotCount))
+                {
+                    matchedRecipe = recipes[r];
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public float GetProgressNormalized()
@@ -329,6 +480,15 @@ namespace Gameplay.Workstations
         public void CompleteWorkServer()
         {
             if (!IsServer) return;
+
+            if (matchedRecipe != null && matchedRecipe.OutputItem != null)
+            {
+                ClearInventoryServer();
+                int qty = Mathf.Max(1, matchedRecipe.OutputQuantity);
+                for (int i = 0; i < qty && i < SlotCount; i++)
+                    AddOutputServer(matchedRecipe.OutputItem.Id);
+            }
+
             workState.Value = WorkState.Completed;
             workProgress.Value = 1f;
         }
@@ -342,8 +502,20 @@ namespace Gameplay.Workstations
         public void ResetToIdleServer()
         {
             if (!IsServer) return;
+            matchedRecipe = null;
             workState.Value = WorkState.Idle;
             workProgress.Value = 0f;
+        }
+
+        public void FullResetServer()
+        {
+            if (!IsServer) return;
+            matchedRecipe = null;
+            completedAtTime = -1f;
+            workState.Value = WorkState.Idle;
+            workProgress.Value = 0f;
+            ClearInventoryServer();
+            ClearOutputServer();
         }
 
         #endregion
@@ -387,7 +559,7 @@ namespace Gameplay.Workstations
         public void TryDepositHeldServerRpc(ServerRpcParams rpcParams = default)
         {
             if (!IsServer) return;
-            if (workState.Value == WorkState.Working) return;
+            if (workState.Value == WorkState.Working || workState.Value == WorkState.Completed) return;
 
             EnsureSlotCountServer();
 
@@ -403,12 +575,83 @@ namespace Gameplay.Workstations
             if (held == NoneId)
                 return;
 
+            if (recipes != null && recipes.Length > 0)
+            {
+                ushort[] currentIds = new ushort[SlotCount];
+                for (int i = 0; i < SlotCount; i++)
+                    currentIds[i] = GetSlotId(i);
+
+                bool valid = false;
+                for (int r = 0; r < recipes.Length; r++)
+                {
+                    if (recipes[r] != null && recipes[r].IsValidIngredient(held, currentIds, SlotCount))
+                    {
+                        valid = true;
+                        break;
+                    }
+                }
+
+                if (!valid) return;
+            }
+
             int empty = FindFirstEmptySlotServer();
             if (empty < 0)
                 return;
 
             SlotItemIds[empty] = held;
             carry.ClearHeldItemServer();
+
+            AutoStartIfReady();
+        }
+
+        public void AutoStartIfReady()
+        {
+            if (!IsServer) return;
+            if (!CanStartWork()) return;
+
+            SetWorkStateServer(WorkState.Working);
+            SetProgressServer(0f);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void TryTakeFirstOccupiedSlotServerRpc(ServerRpcParams rpcParams = default)
+        {
+            if (!IsServer) return;
+            if (workState.Value == WorkState.Working) return;
+
+            EnsureSlotCountServer();
+
+            ulong clientId = rpcParams.Receive.SenderClientId;
+            PlayerCarry carry = GetCarryForClient(clientId);
+            if (carry == null) return;
+
+            if (carry.IsHoldingServer())
+                return;
+
+            for (int i = 0; i < SlotCount; i++)
+            {
+                if (SlotItemIds[i] != NoneId)
+                {
+                    ushort slotId = SlotItemIds[i];
+                    SlotItemIds[i] = NoneId;
+                    carry.SetHeldItemServer(slotId);
+
+                    if (workState.Value == WorkState.Failed && !HasAnyItemServer())
+                        ResetToIdleServer();
+
+                    return;
+                }
+            }
+        }
+
+        private bool HasAnyItemServer()
+        {
+            for (int i = 0; i < SlotCount; i++)
+            {
+                if (SlotItemIds[i] != NoneId)
+                    return true;
+            }
+            return false;
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -416,7 +659,7 @@ namespace Gameplay.Workstations
         {
             if (!IsServer) return;
             if (workState.Value != WorkState.Completed) return;
-            if (assignedRecipe == null || assignedRecipe.OutputItem == null) return;
+            if (!HasAnyOutput()) return;
 
             ulong clientId = rpcParams.Receive.SenderClientId;
             PlayerCarry carry = GetCarryForClient(clientId);
@@ -425,17 +668,29 @@ namespace Gameplay.Workstations
             if (carry.IsHoldingServer())
                 return;
 
-            carry.SetHeldItemServer(assignedRecipe.OutputItem.Id);
+            for (int i = 0; i < SlotCount; i++)
+            {
+                if (OutputSlotIds[i] != NoneId)
+                {
+                    carry.SetHeldItemServer(OutputSlotIds[i]);
+                    OutputSlotIds[i] = NoneId;
 
-            ClearInventoryServer();
-            ResetToIdleServer();
+                    if (!HasAnyOutput())
+                    {
+                        ClearInventoryServer();
+                        matchedRecipe = null;
+                        ResetToIdleServer();
+                    }
+
+                    return;
+                }
+            }
         }
 
         [ServerRpc(RequireOwnership = false)]
         public void TryTakeOutputServerRpc(ServerRpcParams rpcParams = default)
         {
             if (!IsServer) return;
-            if (outputSlotId.Value == NoneId) return;
 
             ulong clientId = rpcParams.Receive.SenderClientId;
             PlayerCarry carry = GetCarryForClient(clientId);
@@ -444,8 +699,79 @@ namespace Gameplay.Workstations
             if (carry.IsHoldingServer())
                 return;
 
-            carry.SetHeldItemServer(outputSlotId.Value);
-            outputSlotId.Value = NoneId;
+            for (int i = 0; i < SlotCount; i++)
+            {
+                if (OutputSlotIds[i] != NoneId)
+                {
+                    carry.SetHeldItemServer(OutputSlotIds[i]);
+                    OutputSlotIds[i] = NoneId;
+                    return;
+                }
+            }
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void SwapOutputWithHeldServerRpc(ServerRpcParams rpcParams = default)
+        {
+            if (!IsServer) return;
+            if (workState.Value != WorkState.Completed) return;
+            if (!HasAnyOutput()) return;
+
+            ulong clientId = rpcParams.Receive.SenderClientId;
+            PlayerCarry carry = GetCarryForClient(clientId);
+            if (carry == null) return;
+            if (!carry.IsHoldingServer()) return;
+
+            ushort heldId = carry.GetHeldItemIdServer();
+            if (heldId == NoneId) return;
+
+            ushort outputId = NoneId;
+            for (int i = 0; i < SlotCount; i++)
+            {
+                if (OutputSlotIds[i] != NoneId)
+                {
+                    outputId = OutputSlotIds[i];
+                    OutputSlotIds[i] = NoneId;
+                    break;
+                }
+            }
+
+            if (outputId == NoneId) return;
+
+            carry.SetHeldItemServer(outputId);
+
+            if (!HasAnyOutput())
+            {
+                ClearInventoryServer();
+                ClearOutputServer();
+                matchedRecipe = null;
+                ResetToIdleServer();
+            }
+
+            int empty = FindFirstEmptySlotServer();
+            if (empty >= 0)
+            {
+                SlotItemIds[empty] = heldId;
+                AutoStartIfReady();
+            }
+        }
+
+        public bool IsIngredientForAnyRecipe(ushort itemId)
+        {
+            if (recipes == null || recipes.Length == 0) return false;
+
+            for (int r = 0; r < recipes.Length; r++)
+            {
+                if (recipes[r] == null || recipes[r].Ingredients == null) continue;
+                var ingredients = recipes[r].Ingredients;
+                for (int i = 0; i < ingredients.Length; i++)
+                {
+                    if (ingredients[i] != null && ingredients[i].Id == itemId)
+                        return true;
+                }
+            }
+
+            return false;
         }
 
         #endregion

@@ -21,6 +21,7 @@ namespace Gameplay.Coop
             return new OrderData
             {
                 RequiredProductId = requiredProduct != null ? requiredProduct.Id : (ushort)0,
+                ProductName = requiredProduct != null ? requiredProduct.DisplayName : "Unknown",
                 RequiredQuantity = requiredQuantity,
                 TimeLimit = timeLimit,
                 DeliveredCount = 0,

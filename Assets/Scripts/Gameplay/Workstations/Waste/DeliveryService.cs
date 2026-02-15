@@ -12,10 +12,11 @@ namespace Gameplay.Workstations
         {
             if (batches == null)
             {
-                return batches
+                return 0.0;
+            }
+            return batches
                 .Where(b => b != null && b.IsDeliverable)
                 .Sum(b => b.ActualYield);
-            }
         }
         public void ValidateBeforeDispatch(IEnumerable<Batch> batches)
         {

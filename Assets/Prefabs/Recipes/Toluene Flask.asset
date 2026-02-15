@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe77471f44bcbb24c9455e98b3630823, type: 3}
+  m_Name: Toluene Flask
+  m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Items.Recipe
+  recipeName: Toluene Flask
+  recipeType: 7
+  ingredients:
+  - {fileID: 11400000, guid: 9214407f3fe9e406784d63feb295507d, type: 2}
+  - {fileID: 11400000, guid: 9214407f3fe9e406784d63feb295507d, type: 2}
+  - {fileID: 11400000, guid: 9214407f3fe9e406784d63feb295507d, type: 2}
+  - {fileID: 11400000, guid: 9214407f3fe9e406784d63feb295507d, type: 2}
+  - {fileID: 11400000, guid: 324051af98e34d9e681fd46f1891c16d, type: 2}
+  outputItem: {fileID: 11400000, guid: 3eda2b9dad94d673a89e06ad884a6247, type: 2}
+  outputQuantity: 4
+  minTemperature: 0
+  maxTemperature: 100
+  workDuration: 5
+  targetMass: 10
+  massTolerance: 0.5
+  requiredWeightUnit: 0
+  targetVolume: 50
+  volumeTolerance: 1
+  requiredVolumeUnit: 0

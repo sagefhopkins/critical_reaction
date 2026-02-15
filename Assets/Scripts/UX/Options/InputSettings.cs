@@ -84,5 +84,6 @@ namespace UX.Options
         public bool IsApplyPressed() => Input.GetKeyDown(controls.Apply);
         public bool IsCancelPressed() => Input.GetKeyDown(controls.Cancel);
         public bool IsInteractPressed() => Input.GetKeyDown(controls.Interact);
+        public bool IsInteractHeld() => Input.GetKey(controls.Interact);
     }
 }

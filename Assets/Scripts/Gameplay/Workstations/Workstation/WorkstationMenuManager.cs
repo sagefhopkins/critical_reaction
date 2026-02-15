@@ -40,48 +40,15 @@ namespace Gameplay.Workstations
                 Instance = null;
         }
 
+        // BETA SIMPLIFICATION: Workstation menus disabled — direct E-key interaction.
         public void OpenMenu(Workstation workstation, PlayerCarry localCarry)
         {
-            if (workstation == null) return;
-
-            Debug.Log($"WorkstationMenuManager.OpenMenu: Opening menu for workstation type: {workstation.Type}");
-
-            CloseCurrentMenu();
-
-            WorkstationMenuEntry entry = FindEntry(workstation.Type);
-            if (entry == null || entry.menuRoot == null)
-            {
-                Debug.LogWarning($"No menu configured for workstation type: {workstation.Type}. Available entries: {menus?.Length ?? 0}");
-                return;
-            }
-
-            Debug.Log($"WorkstationMenuManager.OpenMenu: Found menu entry, activating {entry.menuRoot.name}");
-
-            activeWorkstation = workstation;
-            activeMenu = entry.menuScript;
-
-            entry.menuRoot.SetActive(true);
-
-            if (activeMenu != null)
-                activeMenu.Open(workstation, localCarry);
+            // No-op for beta: workstations use direct interaction, not menus.
         }
 
         public void CloseCurrentMenu()
         {
-            if (activeMenu != null)
-            {
-                activeMenu.Close();
-                activeMenu = null;
-            }
-
-            if (activeWorkstation != null)
-            {
-                WorkstationMenuEntry entry = FindEntry(activeWorkstation.Type);
-                if (entry != null && entry.menuRoot != null)
-                    entry.menuRoot.SetActive(false);
-
-                activeWorkstation = null;
-            }
+            // No-op for beta: workstation menus are never opened.
         }
 
         public bool IsMenuOpen()

@@ -15,10 +15,17 @@ MonoBehaviour:
   levelId: 0
   levelName: Standard Solution Setup
   layoutPrefab: {fileID: 4313882351668404019, guid: fe90b5358fb1173378e8c3bdacaf3719, type: 3}
-  timeLimit: 60
-  deliveryTargets:
-  - item: {fileID: 11400000, guid: 32b7219d0e32440e69a983a195d31684, type: 2}
-    quantity: 5
+  timeLimit: 20
+  orders:
+  - requiredProduct: {fileID: 11400000, guid: 26d3e880e502c0d179b065e4fb8ff2f1, type: 2}
+    requiredQuantity: 5
+    timeLimit: 0
+  - requiredProduct: {fileID: 11400000, guid: 3eda2b9dad94d673a89e06ad884a6247, type: 2}
+    requiredQuantity: 5
+    timeLimit: 0
+  - requiredProduct: {fileID: 11400000, guid: 6844584fca789afeea2dd12870046351, type: 2}
+    requiredQuantity: 5
+    timeLimit: 0
   starThresholds:
     oneStar: 5
     twoStarTimeRemaining: 7

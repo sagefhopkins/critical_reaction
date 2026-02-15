@@ -111,6 +111,16 @@ namespace Gameplay.Coop
 
             isPaused.Value = false;
 
+            int currentLevelId = 0;
+            if (CoopGameManager.Instance != null)
+            {
+                currentLevelId = CoopGameManager.Instance.LevelId.Value;
+                CoopGameManager.Instance.PrepareForSceneReloadServer();
+            }
+
+            PendingNextLevelId = currentLevelId;
+            SetPendingLevelClientRpc(currentLevelId);
+
             if (NetworkManager.SceneManager != null)
             {
                 string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
@@ -149,6 +159,7 @@ namespace Gameplay.Coop
             if (CoopGameManager.Instance != null)
             {
                 nextLevelId = CoopGameManager.Instance.LevelId.Value + 1;
+                CoopGameManager.Instance.PrepareForSceneReloadServer();
             }
 
             PendingNextLevelId = nextLevelId;

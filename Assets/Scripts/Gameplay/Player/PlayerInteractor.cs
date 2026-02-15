@@ -15,6 +15,7 @@ namespace Gameplay.Player
         [Header("Dependencies")]
         [SerializeField] private PlayerCarry carry;
         [SerializeField] private float confirmHoldTime = 0.35f;
+        [SerializeField] private InteractHoldIndicator holdIndicator;
 
         private readonly List<StorageRack> racksInRange = new List<StorageRack>(8);
         private readonly List<Workstation> workstationsInRange = new List<Workstation>(8);
@@ -34,6 +35,8 @@ namespace Gameplay.Player
         {
             if (carry == null)
                 carry = GetComponent<PlayerCarry>();
+            if (holdIndicator == null)
+                holdIndicator = GetComponentInChildren<InteractHoldIndicator>(true);
         }
 
         public override void OnNetworkSpawn()
@@ -45,6 +48,7 @@ namespace Gameplay.Player
         private void OnDisable()
         {
             ClearAllPrompts();
+            HideHoldIndicator();
         }
 
         private void Update()
@@ -61,22 +65,31 @@ namespace Gameplay.Player
             if (InteractionMenus.Instance != null && InteractionMenus.Instance.AnyMenuOpen)
                 return;
 
-            bool interact = InputSettings.Instance != null 
-                ? InputSettings.Instance.IsInteractPressed() 
-                : Input.GetKeyDown(KeyCode.E);
+            bool interact = InputSettings.Instance != null
+                ? InputSettings.Instance.IsInteractHeld()
+                : Input.GetKey(KeyCode.E);
 
            if (interact)
            {
                 confirmTimer += Time.unscaledDeltaTime;
 
-                if (!hasConfirmed && confirmTimer >= confirmHoldTime)
+                if (!hasConfirmed)
                 {
-                    hasConfirmed = true;
-                    TryInteract();
+                    UpdateHoldIndicator();
+
+                    if (confirmTimer >= confirmHoldTime)
+                    {
+                        hasConfirmed = true;
+                        HideHoldIndicator();
+                        TryInteract();
+                    }
                 }
-           } 
+           }
             else
             {
+                if (confirmTimer > 0f)
+                    HideHoldIndicator();
+
                 confirmTimer = 0f;
                 hasConfirmed = false;
             }
@@ -162,6 +175,12 @@ namespace Gameplay.Player
                 return;
             }
 
+            if (currentWorkstation != null)
+            {
+                TryInteractWithWorkstation();
+                return;
+            }
+
             if (InteractionMenus.Instance == null) return;
 
             if (currentRack != null)
@@ -170,11 +189,34 @@ namespace Gameplay.Player
                 if (currentRackPrompt != null)
                     currentRackPrompt.Hide();
             }
-            else if (currentWorkstation != null)
+        }
+
+        private void TryInteractWithWorkstation()
+        {
+            if (currentWorkstation == null || carry == null) return;
+
+            bool isHolding = carry.IsHoldingLocal;
+            WorkState state = currentWorkstation.CurrentWorkState;
+
+            if (isHolding && state == WorkState.Idle
+                && currentWorkstation.CanAcceptItemClient(carry.HeldItemIdLocal))
             {
-                InteractionMenus.Instance.OpenWorkstation(currentWorkstation, carry);
-                if (currentWorkstationPrompt != null)
-                    currentWorkstationPrompt.Hide();
+                currentWorkstation.TryDepositHeldServerRpc();
+            }
+            else if (isHolding && state == WorkState.Completed
+                     && currentWorkstation.HasAnyOutput()
+                     && currentWorkstation.IsIngredientForAnyRecipe(carry.HeldItemIdLocal))
+            {
+                currentWorkstation.SwapOutputWithHeldServerRpc();
+            }
+            else if (!isHolding && state == WorkState.Completed)
+            {
+                currentWorkstation.CollectOutputServerRpc();
+            }
+            else if (!isHolding && (state == WorkState.Idle || state == WorkState.Failed)
+                     && currentWorkstation.HasOccupiedSlotClient())
+            {
+                currentWorkstation.TryTakeFirstOccupiedSlotServerRpc();
             }
         }
 
@@ -237,6 +279,30 @@ namespace Gameplay.Player
             currentRackPrompt = null;
             currentWorkstationPrompt = null;
             currentDeliveryPrompt = null;
+        }
+
+        private void UpdateHoldIndicator()
+        {
+            if (holdIndicator == null) return;
+
+            Transform target = null;
+            if (currentWorkstation != null)
+                target = currentWorkstation.transform;
+            else if (currentRack != null)
+                target = currentRack.transform;
+            else if (currentDeliveryPoint != null)
+                target = currentDeliveryPoint.transform;
+
+            if (target != null && confirmHoldTime > 0f)
+                holdIndicator.Show(target, confirmTimer / confirmHoldTime);
+            else
+                holdIndicator.Hide();
+        }
+
+        private void HideHoldIndicator()
+        {
+            if (holdIndicator != null)
+                holdIndicator.Hide();
         }
 
         private void OnTriggerEnter2D(Collider2D other)

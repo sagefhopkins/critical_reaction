@@ -28,28 +28,28 @@ For this capstone, the **Beta Taskks** are defined as :
 
 ### Week One - Core Systems and Data Models
 
-- [ ] Implement waste/invalid batch handling
+- [x] Implement waste/invalid batch handling
 - [x] Implement order definition model (RequiredProductId, RequiredQuantity, TimeLimit)
 - [x] Build container item model (contents, volume, temperature, step stage)
 - [x] Implement recipe step state machine (Empty -> FinalizedProduct/Invalid)
-- [ ] Implement multi-timer architecture (global order timer + per step timers)
+- [x] Implement multi-timer architecture (global order timer + per step timers)
 - [x] Implement time-sensitive reaction window evaluation
 - [x] Implement measurement accuracy tolerance system
 - [x] Implement temperature control model (heat/cool rate + target range)
 
 ### Week Two - Station Implementations
 
-- [ ] Implement Measurement Bench Station (Raw -> measured reagent)
-- [ ] Implement Liquid Measurement Station (Raw -> measured volume)
-- [ ] Implement Hot Plate Station (temperature-based step progression)
-- [ ] Implement Cooling Bath Station (cooling + stablization)
-- [ ] Implement Wash/Sink Station (wash mixture to reduce impurity)
-- [ ] Implement Distillation Rig Station (solvent removal -> concentrated product)
-- [ ] Implement Titration Bench Station (validate strength/purity)
+- [x] Implement Measurement Bench Station (Raw -> measured reagent)
+- [x] Implement Liquid Measurement Station (Raw -> measured volume)
+- [x] Implement Hot Plate Station (temperature-based step progression)
+- [x] Implement Cooling Bath Station (cooling + stablization)
+- [x] Implement Wash/Sink Station (wash mixture to reduce impurity)
+- [x] Implement Distillation Rig Station (solvent removal -> concentrated product)
+- [x] Implement Titration Bench Station (validate strength/purity)
 - [x] Implement Storage Rack (Shared team inventory for intermediates)
-- [ ] Implement Input Shelves (Unlimited reagents for Beta)
-- [ ] Implement Waste Bin (discard invalid batches; scoring impact hook)
-- [ ] Implement Spill Zone Hazard (slow + cleanup; scoring impact hook)
+- [x] Implement Input Shelves (Unlimited reagents for Beta)
+- [x] Implement Waste Bin (discard invalid batches; scoring impact hook)
+- [x] Implement Spill Zone Hazard (slow + cleanup; scoring impact hook)
 
 ### Week Three - Player Experience, UI and Level Design
 
@@ -112,7 +112,7 @@ Core systems work: movement, item carrying, storage racks, and the Scale worksta
 ## Planned Features
 
 - **Order/Delivery System** - Receive and complete production orders
-- **Campaign Progression** - 8-level Benzoic Acid campaign
+- **Campaign Progression** - 6-level Benzoic Acid campaign
 - **Additional Stations** - Distillation, cooling bath, wash/separation
 - **Timer System** - Global and per-step timers
 - **Scoring/Ranking** - Bronze/Silver/Gold completion ranks
@@ -262,7 +262,7 @@ cd critical-reaction
 
 ### Phase 2 – Benzoic Acid Campaign
 
-- [ ] Implement all 8 campaign levels (see outline below).
+- [ ] Implement all 6 campaign levels (see outline below).
 - [ ] Add time limits and quantity requirements per level.
 - [ ] Add basic scoring / rank system (Bronze/Silver/Gold).
 - [ ] Add tutorial hints and level briefings.
@@ -290,61 +290,49 @@ cd critical-reaction
 
 ## Benzoic Acid Campaign Outline
 
-Campaign 1 walks the player through a simplified, game-friendly workflow for producing benzoic acid. Each level’s win condition is:
+Campaign 1 walks the player through a simplified, game-friendly workflow for producing benzoic acid via oxidation of toluene with potassium permanganate. Levels are consolidated so that 1–4 players always have enough parallel work to stay busy.
 
-**Level 1 – Standard Solution Setup**
-   - **Goal:** Prepare a sodium hydroxide standard solution used later for neutralization/titration steps.
-   - **Focus:** Accurate liquid measurement, labeling, and a basic “strength check” at a titration bench.
+**Level 1 – Prep & Standard Solutions**
+   - **Goal:** Prepare all reagents and a sodium hydroxide standard solution for later steps.
+   - **Stations:** Scale, Graduated Cylinder, Input Shelves, Storage Rack, Delivery Chute
+   - **Chemistry:** Weigh NaOH pellets on the scale to a target mass. Measure water to a target volume in the graduated cylinder. Dissolve NaOH in water to produce a standard solution (known concentration). Measure out toluene (liquid starting material) and potassium permanganate (solid oxidizing agent). Stage everything on storage racks.
+   - **Co-op split:** Players divide across scale, graduated cylinder, and storage rack shuttling.
+   - **Focus:** Accurate measurement, station familiarity, and team coordination basics.
 
-**Level 2 – Prep Ingredients and Glassware**
-   - **Goal:** Gather and stage all required reagents; measure out reactants; prepare reaction glassware for the oxidation run.
-   - **Focus:** Mise en place, correct measuring, and setting up the proper reaction apparatus.
+**Level 2 – Reaction Assembly & Heat**
+   - **Goal:** Assemble the reaction mixture and run the oxidation at a controlled temperature.
+   - **Stations:** Hot Plate, Cooling Bath, Input Shelves, Storage Rack, Delivery Chute
+   - **Chemistry:** Combine toluene + potassium permanganate + solvent into the reaction flask in the correct order (wrong sequence reduces yield or causes failure). Heat on the hot plate to a target temperature band (~100 C reflux). Hold for a required duration — too hot causes boil-over, too cold stalls the reaction. Add concentrated sulfuric acid at the correct moment during the hold. Use cooling bath if temperature spikes above the safe range.
+   - **Co-op split:** Some players assemble new batches while others monitor temperature and manage the timed acid addition.
+   - **Focus:** Correct reagent sequencing, temperature control, and reaction timing.
 
-**Level 3 – Reaction Mix Assembly**
-   - **Goal:** Assemble the reaction mixture that will ultimately yield benzoic acid.
-   - **Reagents:** Toluene, potassium permanganate (plus the required solvent system).
-   - **Focus:** Combining reagents in the correct order and ratio; avoiding incorrect sequencing that reduces yield or creates side issues.
+**Level 3 – Distill & Separate**
+   - **Goal:** Distill the reaction product and purify via liquid–liquid separation.
+   - **Stations:** Distillation Rig, Wash/Separation Station, Storage Rack, Waste Bin, Delivery Chute
+   - **Chemistry:** Load completed reaction mixture into the distillation rig. Vacuum distill under reduced pressure — collect the fraction in the target temperature range (wrong cut = fail). Take the distillate to the separatory funnel. Add concentrated NaOH solution to convert benzoic acid into sodium benzoate (moves into the water layer). Shake and vent the funnel (pressure builds, venting is a timed action). Let layers settle — organic on top, aqueous on bottom. Drain and keep the aqueous layer (sodium benzoate), discard organic layer to waste. Repeat wash cycle 3 times per batch.
+   - **Co-op split:** One pair runs distillation, another runs the repetitive wash/separate cycles.
+   - **Focus:** Correct fraction collection, layer identification, safe venting, and pipelining.
 
-**Level 4 – Heat and Hold**
-   - **Goal:** Run the reaction within a safe temperature band for a required hold time.
-   - **Actions:** Heat and stir; monitor temperature; prevent bubbling/boil-over; add concentrated sulfuric acid at the correct time.
-   - **Focus:** Hot plate control, cooling bath use, timed addition, and stability under heat.
+**Level 4 – Acidify & Filter**
+   - **Goal:** Convert sodium benzoate back to benzoic acid and isolate the solid product.
+   - **Stations:** Titration Bench, Vacuum Filtration, Wash/Sink, Storage Rack, Delivery Chute
+   - **Chemistry:** Take aqueous sodium benzoate solution. Slowly add HCl at the titration bench while monitoring pH. When pH drops below 2, benzoic acid precipitates as a white solid ("crashing out"). Adding too fast overshoots and degrades purity; too slow wastes time. Set up vacuum filtration. Pour the suspension through the filter to collect solid benzoic acid. Wash the collected solid with cold water to remove leftover salts and acid.
+   - **Co-op split:** Some players acidify batches at titration, others run filtration and washing.
+   - **Focus:** Controlled acid addition, pH endpoint timing, and clean filtration technique.
 
-**Level 4.1 – Vacuum Distillation**
-   - **Goal:** Distill the reaction mixture under reduced pressure and collect the fraction at the target temperature range.
-   - **Focus:** Running a vacuum distillation setup, making the correct collection cut, and avoiding overheating or collecting outside spec.
+**Level 5 – Purify & Dry**
+   - **Goal:** Recrystallize for purity and dry to final product spec.
+   - **Stations:** Hot Plate, Cooling Bath, Vacuum Filtration, Drying Oven, Storage Rack, Delivery Chute
+   - **Chemistry:** Dissolve crude benzoic acid crystals in a hot water/ethanol mixture on the hot plate (must fully dissolve). Cool slowly at room temperature to grow large, pure crystals (rushing gives small impure crystals). Chill in ice/cooling bath to complete crystallization. Filter again to collect purified crystals. Transfer to the drying oven at low temperature. Dry until stable mass (overheating degrades the product).
+   - **Co-op split:** Players manage multiple batches at different stages — dissolving, cooling, filtering, drying.
+   - **Focus:** Controlled cooling for crystal growth, avoiding overheating, and hitting yield target.
 
-**Level 5 – Wash and Separate**
-   - **Goal:** Purify via liquid–liquid separation and retain the correct phase for the next step.
-   - **Equipment/Reagents:** Separatory funnel; diethyl ether and product fraction from distillation; concentrated sodium hydroxide solution.
-   - **Actions:** Add concentrated NaOH to convert benzoic acid to sodium benzoate; shake and vent frequently (pressure builds); repeat extraction cycle **3×**; identify layers by density; **discard organic layer and keep aqueous layer** (contains sodium benzoate).
-   - **Focus:** Layer identification, safe venting technique, repeatable wash cycles, and collecting the “good” phase.
-
-**Level 6 – Convert Back to Benzoic Acid**
-   - **Goal:** Convert sodium benzoate back into benzoic acid and drive precipitation.
-   - **Reagent:** HCl.
-   - **Actions:** Slowly add HCl while monitoring pH until **pH < 2**; observe solids (“crashing out”) as benzoic acid forms.
-   - **Focus:** Controlled addition, pH monitoring, and timing the endpoint for maximum recovery.
-
-**Level 7 – Vacuum Filtration**
-   - **Goal:** Isolate the precipitated benzoic acid solids and wash away residual salts/acid.
-   - **Actions:** Vacuum filter; wash solids with water; collect wet cake.
-   - **Focus:** Proper filtration setup, minimizing product loss, and clean washing technique.
-
-**Level 8 – Recrystallization**
-   - **Goal:** Improve purity by dissolving and re-forming crystals under controlled conditions.
-   - **Solvent System:** Water/ethanol mixture that does not fully dissolve the solids at room temperature.
-   - **Actions:** Heat until all solids dissolve; cool slowly to room temperature to grow crystals; then chill (e.g., ice bath) to complete crystallization; filter again to collect purified crystals.
-   - **Focus:** Solvent choice, controlled cooling for crystal growth, and purification through re-filtration.
-
-**Level 9 – Drying Oven**
-   - **Goal:** Dry crystals to a target mass and dryness spec.
-   - **Actions:** Dry product in a low-temperature drying oven until stable mass is achieved.
-   - **Focus:** Avoiding overheating, meeting dryness requirements, and hitting the final yield target.
-
-**Level 10 – Critical Run: Full Batch**
-   - **Goal:** Run a streamlined version of the full process under one master timer and deliver the final required amount of benzoic acid.
-   - **Focus:** Station-to-station coordination, parallel tasking, timing dependencies (reaction hold, distillation cut, separation cycles, crystallization/drying), and meeting final order quantity.
+**Level 6 – Critical Run: Full Batch**
+   - **Goal:** Run a streamlined full process under one master timer and deliver the required amount of benzoic acid.
+   - **Stations:** All — Scale, Graduated Cylinder, Hot Plate, Cooling Bath, Distillation Rig, Wash/Separation, Titration Bench, Vacuum Filtration, Wash/Sink, Drying Oven, Input Shelves, Storage Rack, Waste Bin, Delivery Chute
+   - **Chemistry:** All steps — measure, react, distill, separate, acidify, filter, recrystallize, dry, deliver.
+   - **Co-op split:** All stations active. Stagger batches through the pipeline to maximize throughput.
+   - **Focus:** Station-to-station coordination, parallel tasking, timing dependencies, and meeting the final delivery quantity.
 
 ---
 

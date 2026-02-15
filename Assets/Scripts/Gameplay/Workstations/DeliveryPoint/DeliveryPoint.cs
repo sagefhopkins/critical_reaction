@@ -65,7 +65,7 @@ namespace Gameplay.Workstations
 
             if (CoopGameManager.Instance != null)
             {
-                CoopGameManager.Instance.RegisterDelivery(1);
+                CoopGameManager.Instance.RegisterDelivery(itemId, 1);
 
                 if (!string.IsNullOrEmpty(itemName))
                 {

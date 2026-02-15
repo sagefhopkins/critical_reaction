@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe77471f44bcbb24c9455e98b3630823, type: 3}
+  m_Name: Potassium Permanganate Flask
+  m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Items.Recipe
+  recipeName: Potassium Permanganate Flask
+  recipeType: 7
+  ingredients:
+  - {fileID: 11400000, guid: 9214407f3fe9e406784d63feb295507d, type: 2}
+  - {fileID: 11400000, guid: 9214407f3fe9e406784d63feb295507d, type: 2}
+  - {fileID: 11400000, guid: 9214407f3fe9e406784d63feb295507d, type: 2}
+  - {fileID: 11400000, guid: 9214407f3fe9e406784d63feb295507d, type: 2}
+  - {fileID: 11400000, guid: 3d5c0823c6896697a894f81f6e17393d, type: 2}
+  outputItem: {fileID: 11400000, guid: 6844584fca789afeea2dd12870046351, type: 2}
+  outputQuantity: 4
+  minTemperature: 0
+  maxTemperature: 100
+  workDuration: 5
+  targetMass: 10
+  massTolerance: 0.5
+  requiredWeightUnit: 0
+  targetVolume: 50
+  volumeTolerance: 1
+  requiredVolumeUnit: 0
