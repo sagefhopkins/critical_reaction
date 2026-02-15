@@ -18,6 +18,8 @@ namespace UX.HUD
 
         [Header("Delivery Progress")]
         [SerializeField] private TMP_Text deliveryText;
+        [SerializeField] private float orderCycleDuration = 3f;
+        [SerializeField] private float orderFadeDuration = 0.3f;
 
         [Header("Alerts")]
         [SerializeField] private TMP_Text alertText;
@@ -26,6 +28,8 @@ namespace UX.HUD
         [SerializeField] private CanvasGroup alertCanvasGroup;
 
         private Coroutine alertCoroutine;
+        private Coroutine orderCycleCoroutine;
+        private int currentOrderIndex;
 
         private void OnEnable()
         {
@@ -46,6 +50,12 @@ namespace UX.HUD
                 CoopGameManager.Instance.OnTimerUpdated -= RefreshTimer;
                 CoopGameManager.Instance.OnDeliveryUpdated -= RefreshDelivery;
                 CoopGameManager.Instance.OnAlert -= ShowAlert;
+            }
+
+            if (orderCycleCoroutine != null)
+            {
+                StopCoroutine(orderCycleCoroutine);
+                orderCycleCoroutine = null;
             }
         }
 
@@ -78,6 +88,60 @@ namespace UX.HUD
         private void Update()
         {
             RefreshTimer();
+
+            if (orderCycleCoroutine == null && CoopGameManager.Instance != null
+                && CoopGameManager.Instance.Orders != null
+                && CoopGameManager.Instance.Orders.Count > 1)
+            {
+                orderCycleCoroutine = StartCoroutine(OrderCycleCoroutine());
+            }
+        }
+
+        private IEnumerator OrderCycleCoroutine()
+        {
+            while (true)
+            {
+                RefreshDelivery();
+                SetDeliveryAlpha(1f);
+
+                yield return new WaitForSeconds(orderCycleDuration);
+
+                var orders = CoopGameManager.Instance != null ? CoopGameManager.Instance.Orders : null;
+                if (orders == null || orders.Count <= 1)
+                {
+                    orderCycleCoroutine = null;
+                    yield break;
+                }
+
+                float elapsed = 0f;
+                while (elapsed < orderFadeDuration)
+                {
+                    elapsed += Time.deltaTime;
+                    SetDeliveryAlpha(1f - Mathf.Clamp01(elapsed / orderFadeDuration));
+                    yield return null;
+                }
+
+                currentOrderIndex = (currentOrderIndex + 1) % orders.Count;
+                RefreshDelivery();
+
+                elapsed = 0f;
+                while (elapsed < orderFadeDuration)
+                {
+                    elapsed += Time.deltaTime;
+                    SetDeliveryAlpha(Mathf.Clamp01(elapsed / orderFadeDuration));
+                    yield return null;
+                }
+
+                SetDeliveryAlpha(1f);
+            }
+        }
+
+        private void SetDeliveryAlpha(float alpha)
+        {
+            if (deliveryText == null) return;
+            Color c = deliveryText.color;
+            c.a = alpha;
+            deliveryText.color = c;
         }
 
         private void RefreshAll()
@@ -127,10 +191,19 @@ namespace UX.HUD
                 return;
             }
 
-            string compound = CoopGameManager.Instance.TargetCompoundName;
-            int delivered = CoopGameManager.Instance.DeliveredCount;
-            int target = CoopGameManager.Instance.TargetCount;
-            deliveryText.text = $"{compound}: {delivered} / {target}";
+            var orders = CoopGameManager.Instance.Orders;
+            if (orders == null || orders.Count == 0)
+            {
+                string compound = CoopGameManager.Instance.TargetCompoundName;
+                int delivered = CoopGameManager.Instance.DeliveredCount;
+                int target = CoopGameManager.Instance.TargetCount;
+                deliveryText.text = $"{compound}: {delivered} / {target}";
+                return;
+            }
+
+            int idx = currentOrderIndex % orders.Count;
+            OrderData order = orders[idx];
+            deliveryText.text = $"{order.ProductName}: {order.DeliveredCount} / {order.RequiredQuantity}";
         }
 
         public void ShowAlert(string message)

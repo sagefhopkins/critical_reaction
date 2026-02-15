@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Gameplay.Workstations.Scale
 {
-    [CreateAssetMenu(fileName = "ChemicalParticleData", menuName = "Chemistry/Particle Data")]
+    [CreateAssetMenu(fileName = "ChemicalParticleData", menuName = "Critical Reaction/Particle Data")]
     public class ChemicalParticleData : ScriptableObject
     {
         [SerializeField] private string chemicalName = "Sodium Chloride";

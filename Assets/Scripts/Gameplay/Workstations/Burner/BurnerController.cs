@@ -28,6 +28,9 @@ namespace Gameplay.Workstations
 
         public override void OnNetworkSpawn()
         {
+            if (IsServer)
+                workingClientId.Value = ulong.MaxValue;
+
             if (workstation != null)
                 workstation.OnWorkStateChanged += HandleWorkStateChanged;
         }

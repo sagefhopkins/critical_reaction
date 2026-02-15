@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Gameplay.Coop
 {
-    [CreateAssetMenu(menuName = "Coop/Level Config", fileName = "LevelConfig")]
+    [CreateAssetMenu(menuName = "Critical Reaction/Level Config", fileName = "LevelConfig")]
     public class LevelConfig : ScriptableObject
     {
         [Serializable]

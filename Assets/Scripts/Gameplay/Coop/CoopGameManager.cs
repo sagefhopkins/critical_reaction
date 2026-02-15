@@ -1,4 +1,6 @@
 using System;
+using Gameplay.Player;
+using Gameplay.Workstations;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -52,6 +54,8 @@ namespace Gameplay.Coop
             NetworkVariableWritePermission.Server
         );
 
+        public NetworkList<OrderData> Orders { get; private set; }
+
         private LevelConfig currentLevelConfig;
         private GameObject currentLayoutInstance;
 
@@ -75,6 +79,12 @@ namespace Gameplay.Coop
             }
 
             Instance = this;
+
+            Orders = new NetworkList<OrderData>(
+                default,
+                NetworkVariableReadPermission.Everyone,
+                NetworkVariableWritePermission.Server
+            );
         }
 
         private void OnDestroy()
@@ -182,10 +192,48 @@ namespace Gameplay.Coop
             if (IsServer)
             {
                 LoadLevelConfig(levelId);
+                ResetAllWorkstations();
+                ResetAllPlayers();
                 elapsedTime.Value = 0f;
                 deliveredCount.Value = 0;
                 levelActive.Value = true;
             }
+        }
+
+        private void ResetAllWorkstations()
+        {
+            Workstation[] all = FindObjectsByType<Workstation>(FindObjectsSortMode.None);
+            for (int i = 0; i < all.Length; i++)
+            {
+                if (all[i] != null)
+                    all[i].FullResetServer();
+            }
+        }
+
+        private void ResetAllPlayers()
+        {
+            PlayerCarry[] carries = FindObjectsByType<PlayerCarry>(FindObjectsSortMode.None);
+            for (int i = 0; i < carries.Length; i++)
+            {
+                if (carries[i] != null)
+                    carries[i].ClearHeldItemServer();
+            }
+        }
+
+        public void PrepareForSceneReloadServer()
+        {
+            if (!IsServer) return;
+
+            levelActive.Value = false;
+
+            if (currentLayoutInstance != null)
+            {
+                DespawnAllNetworkObjects(currentLayoutInstance);
+                Destroy(currentLayoutInstance);
+                currentLayoutInstance = null;
+            }
+
+            ResetAllPlayers();
         }
 
         private void LoadLevelConfig(int levelId)
@@ -207,9 +255,16 @@ namespace Gameplay.Coop
             targetCount.Value = config.TotalTargetCount;
             targetCompoundName.Value = config.PrimaryTargetName;
 
+            Orders.Clear();
+            if (config.Orders != null)
+            {
+                for (int i = 0; i < config.Orders.Length; i++)
+                    Orders.Add(config.Orders[i].ToOrderData());
+            }
+
             SpawnLayout(config.LayoutPrefab);
 
-            Debug.Log($"Loaded level config: {config.LevelName}, Time: {config.TimeLimit}s, Target: {config.PrimaryTargetName} x{config.TotalTargetCount}");
+            Debug.Log($"Loaded level config: {config.LevelName}, Time: {config.TimeLimit}s, Orders: {(config.Orders != null ? config.Orders.Length : 0)}");
         }
 
         private void SpawnLayout(GameObject layoutPrefab)
@@ -237,7 +292,7 @@ namespace Gameplay.Coop
             foreach (var netObj in networkObjects)
             {
                 if (!netObj.IsSpawned)
-                    netObj.Spawn();
+                    netObj.Spawn(true);
             }
         }
 
@@ -251,20 +306,31 @@ namespace Gameplay.Coop
             }
         }
 
-        public void RegisterDelivery(int amount = 1)
+        public void RegisterDelivery(ushort productId, int amount = 1)
         {
             if (!NetworkManager.IsListening) return;
-            RegisterDeliveryServerRpc(amount);
+            RegisterDeliveryServerRpc(productId, amount);
         }
 
         [ServerRpc(RequireOwnership = false)]
-        private void RegisterDeliveryServerRpc(int amount, ServerRpcParams rpcParams = default)
+        private void RegisterDeliveryServerRpc(ushort productId, int amount, ServerRpcParams rpcParams = default)
         {
             if (!IsServer) return;
             if (!levelActive.Value) return;
 
             bool wasComplete = IsLevelComplete;
             deliveredCount.Value += amount;
+
+            for (int i = 0; i < Orders.Count; i++)
+            {
+                OrderData order = Orders[i];
+                if (order.RequiredProductId == productId && !order.IsComplete)
+                {
+                    order.DeliveredCount += amount;
+                    Orders[i] = order;
+                    break;
+                }
+            }
 
             if (!wasComplete && IsLevelComplete)
             {

@@ -1,11 +1,15 @@
-using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Gameplay.Workstations
 {
+    /// <summary>
+    /// BETA SIMPLIFICATION: Menu body commented out. Workstations now use
+    /// direct E-key interaction instead of menus. Restore for post-beta.
+    /// </summary>
     public class BurnerMenu : WorkstationMenuBase
     {
+        /* BETA: All menu logic commented out — direct interaction replaces menus.
+
         [Header("Slots")]
         [SerializeField] private Button[] slotButtons;
         [SerializeField] private Image[] slotImages;
@@ -25,170 +29,22 @@ namespace Gameplay.Workstations
 
         private BurnerController burnerController;
 
-        private void Awake()
-        {
-            if (slotButtons != null)
-            {
-                for (int i = 0; i < slotButtons.Length; i++)
-                {
-                    int idx = i;
-                    if (slotButtons[i] != null)
-                        slotButtons[i].onClick.AddListener(() => OnClickSlot(idx));
-                }
-            }
+        private void Awake() { ... }
+        protected override void OnOpened() { ... }
+        protected override void OnClosed() { ... }
+        protected override void OnWorkStateChanged() { ... }
+        protected override void OnProgressChanged() { ... }
+        protected override void OnInventoryChanged() { ... }
+        protected override void OnHeldItemChanged() { ... }
+        private void OnClickSlot(int slotIndex) { ... }
+        private void OnClickDeposit() { ... }
+        private void OnClickStartWork() { ... }
+        private void OnClickCollect() { ... }
+        private void OnClickClose() { ... }
+        private void RefreshAll() { ... }
+        private void RefreshProgress() { ... }
+        private void RefreshState() { ... }
 
-            if (depositButton != null)
-                depositButton.onClick.AddListener(OnClickDeposit);
-
-            if (startWorkButton != null)
-                startWorkButton.onClick.AddListener(OnClickStartWork);
-
-            if (collectButton != null)
-                collectButton.onClick.AddListener(OnClickCollect);
-
-            if (closeButton != null)
-                closeButton.onClick.AddListener(OnClickClose);
-        }
-
-        protected override void OnOpened()
-        {
-            burnerController = workstation.GetComponent<BurnerController>();
-            RefreshAll();
-        }
-
-        protected override void OnClosed()
-        {
-            burnerController = null;
-        }
-
-        protected override void OnWorkStateChanged()
-        {
-            RefreshAll();
-        }
-
-        protected override void OnProgressChanged()
-        {
-            RefreshProgress();
-        }
-
-        protected override void OnInventoryChanged()
-        {
-            RefreshAll();
-        }
-
-        protected override void OnHeldItemChanged()
-        {
-            RefreshAll();
-        }
-
-        private void OnClickSlot(int slotIndex)
-        {
-            if (workstation == null || localCarry == null) return;
-            if (!localCarry.IsOwner) return;
-            if (workstation.CurrentWorkState == WorkState.Working) return;
-
-            if (localCarry.IsHoldingLocal)
-                return;
-
-            workstation.TryTakeFromSlotServerRpc(slotIndex);
-        }
-
-        private void OnClickDeposit()
-        {
-            if (workstation == null || localCarry == null) return;
-            if (!localCarry.IsOwner) return;
-            if (workstation.CurrentWorkState == WorkState.Working) return;
-
-            if (!localCarry.IsHoldingLocal)
-                return;
-
-            workstation.TryDepositHeldServerRpc();
-        }
-
-        private void OnClickStartWork()
-        {
-            if (workstation == null || localCarry == null) return;
-            if (!localCarry.IsOwner) return;
-            if (burnerController == null) return;
-
-            burnerController.TryStartWorkServerRpc();
-        }
-
-        private void OnClickCollect()
-        {
-            if (workstation == null || localCarry == null) return;
-            if (!localCarry.IsOwner) return;
-
-            workstation.CollectOutputServerRpc();
-        }
-
-        private void OnClickClose()
-        {
-            RequestClose();
-        }
-
-        private void RefreshAll()
-        {
-            if (workstation == null || localCarry == null) return;
-
-            bool holding = localCarry.IsHoldingLocal;
-            WorkState state = workstation.CurrentWorkState;
-            bool isWorking = state == WorkState.Working;
-            bool isCompleted = state == WorkState.Completed;
-
-            for (int i = 0; i < Workstation.SlotCount; i++)
-            {
-                ushort id = workstation.GetSlotId(i);
-                Sprite spr = workstation.GetSpriteForSlot(i);
-
-                if (slotImages != null && i < slotImages.Length && slotImages[i] != null)
-                {
-                    slotImages[i].sprite = spr;
-                    slotImages[i].enabled = spr != null;
-                }
-
-                if (slotButtons != null && i < slotButtons.Length && slotButtons[i] != null)
-                {
-                    slotButtons[i].interactable = !holding && !isWorking && id != 0;
-                }
-            }
-
-            if (depositButton != null)
-                depositButton.interactable = holding && !isWorking && workstation.HasEmptySlotClient();
-
-            if (startWorkButton != null)
-            {
-                startWorkButton.interactable = state == WorkState.Idle && workstation.CanStartWork();
-                startWorkButton.gameObject.SetActive(state == WorkState.Idle);
-            }
-
-            if (collectButton != null)
-            {
-                collectButton.interactable = isCompleted && !holding;
-                collectButton.gameObject.SetActive(isCompleted);
-            }
-
-            RefreshProgress();
-            RefreshState();
-        }
-
-        private void RefreshProgress()
-        {
-            if (workstation == null) return;
-
-            float progress = workstation.GetProgressNormalized();
-
-            if (progressSlider != null)
-                progressSlider.value = progress;
-
-            if (progressText != null)
-                progressText.text = workstation.GetProgressText();
-        }
-
-        private void RefreshState()
-        {
-            if (stateText == null || workstation == null) return;
-            stateText.text = workstation.GetStateText();
-        }
+        */
     }
 }

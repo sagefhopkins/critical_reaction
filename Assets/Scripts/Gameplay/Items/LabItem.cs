@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Gameplay.Items
 {
-    [CreateAssetMenu(menuName = "Items", fileName = "LabItem")]
+    [CreateAssetMenu(menuName = "Critical Reaction/Lab Item", fileName = "LabItem")]
     public class LabItem : ScriptableObject
     {
         [SerializeField] private ushort id;

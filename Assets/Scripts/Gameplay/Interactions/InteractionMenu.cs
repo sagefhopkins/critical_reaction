@@ -46,20 +46,10 @@ namespace UX
             storageRackMenu.Open(rack, carry);
         }
 
+        // BETA SIMPLIFICATION: Workstation menus disabled — direct E-key interaction.
         public void OpenWorkstation(Workstation workstation, PlayerCarry carry)
         {
-            Debug.Log($"InteractionMenus.OpenWorkstation called for workstation: {workstation?.name}, type: {workstation?.Type}");
-            CloseAll();
-
-            if (workstationMenuManager == null || workstation == null || carry == null)
-            {
-                Debug.LogWarning($"InteractionMenus.OpenWorkstation: Cannot open - manager={workstationMenuManager != null}, workstation={workstation != null}, carry={carry != null}");
-                AnyMenuOpen = false;
-                return;
-            }
-
-            AnyMenuOpen = true;
-            workstationMenuManager.OpenMenu(workstation, carry);
+            // No-op for beta: workstations use direct interaction, not menus.
         }
 
         public void CloseAll()

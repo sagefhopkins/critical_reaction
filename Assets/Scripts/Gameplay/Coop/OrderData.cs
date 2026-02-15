@@ -1,4 +1,5 @@
 using System;
+using Unity.Collections;
 using Unity.Netcode;
 
 namespace Gameplay.Coop
@@ -6,6 +7,7 @@ namespace Gameplay.Coop
     public struct OrderData : INetworkSerializable, IEquatable<OrderData>
     {
         public ushort RequiredProductId;
+        public FixedString64Bytes ProductName;
         public int RequiredQuantity;
         public float TimeLimit;
         public int DeliveredCount;
@@ -19,6 +21,7 @@ namespace Gameplay.Coop
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
             serializer.SerializeValue(ref RequiredProductId);
+            serializer.SerializeValue(ref ProductName);
             serializer.SerializeValue(ref RequiredQuantity);
             serializer.SerializeValue(ref TimeLimit);
             serializer.SerializeValue(ref DeliveredCount);
@@ -43,7 +46,7 @@ namespace Gameplay.Coop
 
         public override string ToString()
         {
-            return $"Order(Product:{RequiredProductId} {DeliveredCount}/{RequiredQuantity} Time:{ElapsedTime:F1}/{TimeLimit:F1})";
+            return $"Order({ProductName} {DeliveredCount}/{RequiredQuantity} Time:{ElapsedTime:F1}/{TimeLimit:F1})";
         }
     }
 }

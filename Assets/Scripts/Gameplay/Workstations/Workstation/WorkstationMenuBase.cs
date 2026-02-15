@@ -38,30 +38,13 @@ namespace Gameplay.Workstations
             Unsubscribe();
         }
 
+        // BETA SIMPLIFICATION: Subscribe/Unsubscribe disabled — menus not used.
         protected virtual void Subscribe()
         {
-            if (workstation != null)
-            {
-                workstation.OnWorkStateChanged += OnWorkStateChanged;
-                workstation.OnProgressChanged += OnProgressChanged;
-                workstation.OnInventoryChanged += OnInventoryChanged;
-            }
-
-            if (localCarry != null)
-                localCarry.HeldItemChanged += OnHeldItemChanged;
         }
 
         protected virtual void Unsubscribe()
         {
-            if (workstation != null)
-            {
-                workstation.OnWorkStateChanged -= OnWorkStateChanged;
-                workstation.OnProgressChanged -= OnProgressChanged;
-                workstation.OnInventoryChanged -= OnInventoryChanged;
-            }
-
-            if (localCarry != null)
-                localCarry.HeldItemChanged -= OnHeldItemChanged;
         }
 
         protected virtual void OnOpened() { }

@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Gameplay.Coop
 {
-    [CreateAssetMenu(menuName = "Coop/Level Database", fileName = "LevelDatabase")]
+    [CreateAssetMenu(menuName = "Critical Reaction/Level Database", fileName = "LevelDatabase")]
     public class LevelDatabase : ScriptableObject
     {
         [SerializeField] private LevelConfig[] levels;

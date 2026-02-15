@@ -13,10 +13,11 @@ namespace Gameplay.Items
         Synthesis,
         Extraction,
         Weighing,
-        Volumetric
+        Volumetric,
+        Filling
     }
 
-    [CreateAssetMenu(menuName = "Items/Recipe", fileName = "Recipe")]
+    [CreateAssetMenu(menuName = "Critical Reaction/Recipe", fileName = "Recipe")]
     public class Recipe : ScriptableObject
     {
         [Header("Recipe Info")]
@@ -65,6 +66,33 @@ namespace Gameplay.Items
         public bool IsTemperatureValid(float temperature)
         {
             return temperature >= minTemperature && temperature <= maxTemperature;
+        }
+
+        public bool IsValidIngredient(ushort itemId, ushort[] currentSlotIds, int slotCount)
+        {
+            if (ingredients == null || ingredients.Length == 0)
+                return false;
+
+            // Count how many of this item the recipe needs
+            int neededCount = 0;
+            for (int i = 0; i < ingredients.Length; i++)
+            {
+                if (ingredients[i] != null && ingredients[i].Id == itemId)
+                    neededCount++;
+            }
+
+            if (neededCount == 0)
+                return false;
+
+            // Count how many of this item are already in the slots
+            int alreadyPresent = 0;
+            for (int s = 0; s < slotCount; s++)
+            {
+                if (currentSlotIds[s] == itemId)
+                    alreadyPresent++;
+            }
+
+            return alreadyPresent < neededCount;
         }
 
         public bool CanCraftWith(ushort[] slotItemIds, int slotCount)

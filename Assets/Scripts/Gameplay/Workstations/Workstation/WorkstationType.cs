@@ -4,11 +4,14 @@ namespace Gameplay.Workstations
     {
         None = 0,
         Burner,
-        Centrifuge,
-        Mixer,
-        Distiller,
-        Freezer,
         Scale,
-        GraduatedCylinder
+        GraduatedCylinder,
+        WashSink,
+        Titration,
+        CoolingBath,
+        Distiller,
+        VacuumFiltration,
+        DryingOven,
+        Mixer
     }
 }

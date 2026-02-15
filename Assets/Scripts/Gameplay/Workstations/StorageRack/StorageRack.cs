@@ -16,6 +16,9 @@ namespace Gameplay.Workstations
         [Header("Initial Contents (3x3, size 9)")]
         [SerializeField] private LabItem[] initialContents = new LabItem[SlotCount];
 
+        [Header("Behaviour")]
+        [SerializeField] private bool infiniteSupply;
+
         public NetworkList<ushort> SlotItemIds { get; private set; }
 
         private void Awake()
@@ -154,7 +157,8 @@ namespace Gameplay.Workstations
             if (slotId == NoneId)
                 return;
 
-            SlotItemIds[slotIndex] = NoneId;
+            if (!infiniteSupply)
+                SlotItemIds[slotIndex] = NoneId;
             carry.SetHeldItemServer(slotId);
         }
 
@@ -162,6 +166,7 @@ namespace Gameplay.Workstations
         public void TryDepositHeldServerRpc(ulong requestingClientId, ServerRpcParams rpcParams = default)
         {
             if (!IsServer) return;
+            if (infiniteSupply) return;
             EnsureSlotCountServer();
 
             if (rpcParams.Receive.SenderClientId != requestingClientId)
