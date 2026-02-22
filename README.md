@@ -53,16 +53,16 @@ For this capstone, the **Beta Taskks** are defined as :
 
 ### Week Three - Player Experience, UI and Level Design
 
-- [ ] Implement contextual button prompts for Interactions
-- [ ] Implement player indicators (outline + name tag per technician)
-- [ ] Implement station/container readout panel (temp, step timer, fill level, ready state)
+- [x] Implement contextual button prompts for Interactions
+- [x] Implement player indicators (outline + name tag per technician)
+- [x] Implement station/container readout panel (temp, step timer, fill level, ready state)
 - [x] Implement quick alert strip
 - [x] Implement Campaign Map screen
 - [x] Implement Options Menu (Audio, Display)
-- [ ] Build Level 1 Layout (stations + short looping pathing)
-- [ ] Implement Level 1 Parameters (4:00 timer, 250mL target)
-- [ ] Implement brine production interactions (measure + mix + saturation indicator)
-- [ ] Create reusable "level template" pipeline for future campaign levels
+- [x] Build Level 1 Layout (stations + short looping pathing)
+- [x] Implement Level 1 Parameters (4:00 timer, 250mL target)
+- [x] Implement brine production interactions (measure + mix + saturation indicator)
+- [x] Create reusable "level template" pipeline for future campaign levels
 
 ### Week Four - Campaign Progression and Multiplayer
 
@@ -81,7 +81,7 @@ For this capstone, the **Beta Taskks** are defined as :
 
 - **Status:** Beta implementations
 - **MVP Progress:** 4 of 4 milestones complete
-- **Beta Progress:** 10 of 36 milestones complete
+- **Beta Progress:** 29 of 36 milestones complete
 
 Core systems work: movement, item carrying, storage racks, and the Scale workstation. Networking uses Unity Netcode with server-authoritative sync. Order/delivery system is next.
 

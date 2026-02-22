@@ -145,6 +145,8 @@ Transform:
   m_Children:
   - {fileID: 7685574471849906681}
   - {fileID: 5805838788880111163}
+  - {fileID: 627532745791565235}
+  - {fileID: 4048455889390285654}
   m_Father: {fileID: 9019535193458351145}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3499548737295806252
@@ -217,6 +219,7 @@ GameObject:
   - component: {fileID: 2905941562376431279}
   - component: {fileID: 537676955484159075}
   - component: {fileID: 3191806694061522086}
+  - component: {fileID: 3473813566014567158}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -485,6 +488,21 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: -0.0030123778, y: -0.123624}
   m_Radius: 0.032144144
+--- !u!114 &3473813566014567158
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4097590501367952233}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 321aee7df805b615f934b4784d861c6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Player.PlayerIndicatorSetup
+  ShowTopMostFoldoutHeaderGroup: 1
+  nameTag: {fileID: 264231667810278773}
+  outline: {fileID: 8136966619899214314}
 --- !u!1 &5733068425076427499
 GameObject:
   m_ObjectHideFlags: 0

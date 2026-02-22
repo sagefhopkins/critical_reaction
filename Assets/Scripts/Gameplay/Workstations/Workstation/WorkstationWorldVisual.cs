@@ -45,6 +45,13 @@ namespace Gameplay.Workstations
                     workstation.OutputSlotIds.OnListChanged += OnOutputSlotsChanged;
 
                 workstation.OnWorkStateChanged += OnWorkStateChanged;
+                workstation.OnProgressChanged += OnProgressChanged;
+            }
+
+            if (timerBarFill != null)
+            {
+                timerBarFillTransform = timerBarFill.transform;
+                timerBarFillBaseScale = timerBarFillTransform.localScale;
             }
 
             RefreshAll();
@@ -61,6 +68,26 @@ namespace Gameplay.Workstations
                     workstation.OutputSlotIds.OnListChanged -= OnOutputSlotsChanged;
 
                 workstation.OnWorkStateChanged -= OnWorkStateChanged;
+                workstation.OnProgressChanged -= OnProgressChanged;
+            }
+        }
+
+        private void Update()
+        {
+            if (workstation == null) return;
+            if (workstation.CurrentWorkState != WorkState.Idle) return;
+
+            var recipes = workstation.Recipes;
+            if (recipes == null || recipes.Length <= 1) return;
+
+            if (HasAnyDepositedItem() && CountTiedBestRecipes() <= 1) return;
+
+            ghostCycleTimer += Time.deltaTime;
+            if (ghostCycleTimer >= ghostCycleDuration)
+            {
+                ghostCycleTimer = 0f;
+                ghostRecipeIndex++;
+                RefreshSlots();
             }
         }
 
@@ -100,6 +127,7 @@ namespace Gameplay.Workstations
             RefreshSlots();
             RefreshStatusIcon();
             RefreshOutput();
+            RefreshTimerBar();
         }
 
         private void RefreshAll()
@@ -107,6 +135,42 @@ namespace Gameplay.Workstations
             RefreshSlots();
             RefreshStatusIcon();
             RefreshOutput();
+            RefreshTimerBar();
+        }
+
+        private void OnProgressChanged()
+        {
+            RefreshTimerBar();
+        }
+
+        private void RefreshTimerBar()
+        {
+            if (workstation == null) return;
+
+            bool show = workstation.CurrentWorkState == WorkState.Working;
+
+            if (timerBarFrame != null)
+                timerBarFrame.enabled = show;
+
+            if (timerBarFill != null)
+                timerBarFill.enabled = show;
+
+            if (!show || timerBarFillTransform == null) return;
+
+            float progress = workstation.WorkProgress;
+
+            timerBarFillTransform.localScale = new Vector3(
+                timerBarFillBaseScale.x * progress,
+                timerBarFillBaseScale.y,
+                timerBarFillBaseScale.z
+            );
+
+            if (progress >= criticalThreshold && fillCriticalSprite != null)
+                timerBarFill.sprite = fillCriticalSprite;
+            else if (progress >= warningThreshold && fillWarningSprite != null)
+                timerBarFill.sprite = fillWarningSprite;
+            else if (fillNormalSprite != null)
+                timerBarFill.sprite = fillNormalSprite;
         }
 
         private void RefreshSlots()
