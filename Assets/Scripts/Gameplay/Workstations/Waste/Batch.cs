@@ -5,14 +5,14 @@ namespace Gameplay.Workstations
 {
     public class Batch
     {
-        public readonly Guid Id = Guid.NewGuid();
+        public Guid Id { get; } = Guid.NewGuid();
         public BatchStatus Status { get; private set; } = BatchStatus.Valid;
         public WasteReason WasteReasons { get; private set; } = WasteReason.None;
 
-        public readonly double PlannedYield;
+        public double PlannedYield { get; }
         public double ActualYield { get; private set; }
 
-        public readonly DateTime StartTime;
+        public DateTime StartTime { get; }
         public DateTime? EndTime { get; private set; }
 
         public Batch(double plannedYield, DateTime startTime)

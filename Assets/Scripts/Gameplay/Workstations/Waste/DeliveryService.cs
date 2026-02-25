@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Gameplay.Workstations;
 
 namespace Gameplay.Workstations
@@ -18,18 +19,18 @@ namespace Gameplay.Workstations
                 .Where(b => b != null && b.IsDeliverable)
                 .Sum(b => b.ActualYield);
         }
+     
         public void ValidateBeforeDispatch(IEnumerable<Batch> batches)
         {
-
+            
             var invalid = batches
-                .Where(b => b != null && b.Status == BatchStatus.Waste)
+                .Where(b => b.Status == BatchStatus.Waste)
                 .ToList();
 
             if (invalid.Any())
             {
                 throw new InvalidOperationException($"Cannot deliver {invalid.Count} waste batch(es).");
             }
-
         }
     }
 }
