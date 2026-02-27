@@ -13,8 +13,7 @@ namespace Gameplay.Workstations
 
         private void Awake()
         {
-
-            if (Instance != null && Instance != this)
+            if (Instance != null)
             {
                 Destroy(gameObject);
                 return;
@@ -26,7 +25,6 @@ namespace Gameplay.Workstations
             currentBatch = new Batch(plannedYield, System.DateTime.UtcNow);
             context = new ProcessContext();
         }
-
         public void ReportWrongOrder()
         {
             context.IsWrongOrder = true;

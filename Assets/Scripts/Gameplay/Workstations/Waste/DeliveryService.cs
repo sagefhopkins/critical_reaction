@@ -10,26 +10,20 @@ namespace Gameplay.Workstations
     {
         public double CalculateDeliverableQuantity(IEnumerable<Batch> batches)
         {
-            if (batches == null)
-            {
-                return 0.0;
-            }
             return batches
-                .Where(b => b != null && b.IsDeliverable)
-                .Sum(b => b.ActualYield);
+                 .Where(b => b.IsDeliverable)
+                 .Sum(b => b.ActualYield);
         }
         public void ValidateBeforeDispatch(IEnumerable<Batch> batches)
         {
-
             var invalid = batches
-                .Where(b => b != null && b.Status == BatchStatus.Waste)
+                .Where(b => b.Status == BatchStatus.Waste)
                 .ToList();
 
             if (invalid.Any())
             {
                 throw new InvalidOperationException($"Cannot deliver {invalid.Count} waste batch(es).");
             }
-
         }
     }
 }

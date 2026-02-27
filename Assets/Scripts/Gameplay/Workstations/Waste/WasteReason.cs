@@ -10,7 +10,5 @@ namespace Gameplay.Workstations
         WrongOrder = 1,
         MissedTimeWindow = 2,
         Overheated = 4,
-
-        All = WrongOrder | MissedTimeWindow | Overheated
     }
 }
