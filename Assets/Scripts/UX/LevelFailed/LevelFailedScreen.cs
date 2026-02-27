@@ -1,5 +1,7 @@
 using Gameplay.Coop;
+using Gameplay.Save;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 using UX.Options;
 
@@ -120,6 +122,7 @@ namespace UX.LevelFailed
 
         private void SelectRetry()
         {
+            SaveStats();
             HideScreen();
             if (PauseManager.Instance != null)
                 PauseManager.Instance.RequestRestartLevel();
@@ -127,9 +130,22 @@ namespace UX.LevelFailed
 
         private void SelectQuit()
         {
+            SaveStats();
             HideScreen();
             if (PauseManager.Instance != null)
                 PauseManager.Instance.RequestQuit();
+        }
+
+        private void SaveStats()
+        {
+            if (SaveManager.Instance == null) return;
+            if (CoopGameManager.Instance == null) return;
+
+            int levelId = CoopGameManager.Instance.LevelId.Value;
+            bool isCoop = NetworkManager.Singleton != null && NetworkManager.Singleton.IsHost;
+            PlayerLevelStats[] stats = CoopGameManager.Instance.GetAllPlayerStats();
+
+            SaveManager.Instance.RecordLevelFailure(levelId, stats, isCoop);
         }
 
         private void ShowScreen()

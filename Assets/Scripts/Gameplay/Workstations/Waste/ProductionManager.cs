@@ -25,7 +25,6 @@ namespace Gameplay.Workstations
             currentBatch = new Batch(plannedYield, System.DateTime.UtcNow);
             context = new ProcessContext();
         }
-
         public void ReportWrongOrder()
         {
             context.IsWrongOrder = true;

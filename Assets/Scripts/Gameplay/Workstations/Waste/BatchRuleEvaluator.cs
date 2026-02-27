@@ -1,5 +1,6 @@
 using Gameplay.Workstations;
 using UnityEngine;
+
 namespace Gameplay.Workstations
 {
     public class BatchRuleEvaluator

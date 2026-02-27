@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using Gameplay.Player;
+using Gameplay.Save;
 using Gameplay.Workstations;
 using Unity.Netcode;
 using UnityEngine;
@@ -15,6 +17,7 @@ namespace Gameplay.Coop
         public event Action<string> OnAlert;
         public event Action OnLevelFailed;
         public event Action OnLevelWon;
+        public event Action<int, float> OnLevelResults;
 
         [Header("Level Settings")]
         [SerializeField] private LevelDatabase levelDatabase;
@@ -58,6 +61,7 @@ namespace Gameplay.Coop
 
         private LevelConfig currentLevelConfig;
         private GameObject currentLayoutInstance;
+        private Dictionary<ulong, PlayerLevelStats> playerStats = new Dictionary<ulong, PlayerLevelStats>();
 
         public float ElapsedTime => elapsedTime.Value;
         public float RemainingTime => Mathf.Max(0f, levelTimeLimit - elapsedTime.Value);
@@ -69,6 +73,62 @@ namespace Gameplay.Coop
         public bool IsLevelComplete => deliveredCount.Value >= targetCount.Value;
         public bool IsTimeUp => elapsedTime.Value >= levelTimeLimit;
         public LevelConfig CurrentLevelConfig => currentLevelConfig;
+
+        public int CalculateStars()
+        {
+            if (currentLevelConfig == null) return 0;
+            if (!IsLevelComplete) return 0;
+
+            LevelConfig.StarThreshold t = currentLevelConfig.StarThresholds;
+            float remaining = RemainingTime;
+
+            if (remaining >= t.threeStarTimeRemaining) return 3;
+            if (remaining >= t.twoStarTimeRemaining) return 2;
+            if (deliveredCount.Value >= t.oneStar) return 1;
+            return 0;
+        }
+
+        public void RecordDeposit(ulong clientId)
+        {
+            EnsurePlayerStats(clientId).deposits++;
+        }
+
+        public void RecordCollection(ulong clientId)
+        {
+            EnsurePlayerStats(clientId).collections++;
+        }
+
+        public void RecordDelivery(ulong clientId)
+        {
+            EnsurePlayerStats(clientId).deliveries++;
+        }
+
+        public void RecordFailure(ulong clientId)
+        {
+            EnsurePlayerStats(clientId).failures++;
+        }
+
+        public PlayerLevelStats[] GetAllPlayerStats()
+        {
+            PlayerLevelStats[] result = new PlayerLevelStats[playerStats.Count];
+            int i = 0;
+            foreach (var kvp in playerStats)
+            {
+                result[i] = kvp.Value;
+                i++;
+            }
+            return result;
+        }
+
+        private PlayerLevelStats EnsurePlayerStats(ulong clientId)
+        {
+            if (!playerStats.TryGetValue(clientId, out PlayerLevelStats stats))
+            {
+                stats = new PlayerLevelStats();
+                playerStats[clientId] = stats;
+            }
+            return stats;
+        }
 
         private void Awake()
         {
@@ -138,9 +198,16 @@ namespace Gameplay.Coop
             {
                 levelActive.Value = false;
                 if (IsLevelComplete)
+                {
+                    int stars = CalculateStars();
+                    float remaining = RemainingTime;
                     BroadcastLevelWonClientRpc();
+                    BroadcastLevelResultsClientRpc(stars, remaining);
+                }
                 else
+                {
                     BroadcastLevelFailedClientRpc();
+                }
             }
         }
 
@@ -191,6 +258,7 @@ namespace Gameplay.Coop
 
             if (IsServer)
             {
+                playerStats.Clear();
                 LoadLevelConfig(levelId);
                 ResetAllWorkstations();
                 ResetAllPlayers();
@@ -318,6 +386,8 @@ namespace Gameplay.Coop
             if (!IsServer) return;
             if (!levelActive.Value) return;
 
+            RecordDelivery(rpcParams.Receive.SenderClientId);
+
             bool wasComplete = IsLevelComplete;
             deliveredCount.Value += amount;
 
@@ -367,6 +437,12 @@ namespace Gameplay.Coop
         private void BroadcastLevelWonClientRpc()
         {
             OnLevelWon?.Invoke();
+        }
+
+        [ClientRpc]
+        private void BroadcastLevelResultsClientRpc(int stars, float timeRemaining)
+        {
+            OnLevelResults?.Invoke(stars, timeRemaining);
         }
     }
 }

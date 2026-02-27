@@ -22,7 +22,6 @@ namespace Gameplay.Workstations
      
         public void ValidateBeforeDispatch(IEnumerable<Batch> batches)
         {
-            
             var invalid = batches
                 .Where(b => b.Status == BatchStatus.Waste)
                 .ToList();

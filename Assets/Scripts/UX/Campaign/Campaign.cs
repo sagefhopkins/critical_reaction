@@ -1,4 +1,5 @@
 using System;
+using Gameplay.Save;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -75,11 +76,35 @@ namespace UX.Campaign
         private void OnEnable()
         {
             active = true;
+            LoadProgressFromSave();
             selectedLevelIndex = Mathf.Clamp(selectedLevelIndex, 0, Mathf.Max(0, LevelCount - 1));
             if (!IsSelectableLevel(selectedLevelIndex))
                 selectedLevelIndex = FindFirstSelectableLevelIndex();
 
             RefreshAll();
+        }
+
+        private void LoadProgressFromSave()
+        {
+            if (SaveManager.Instance == null) return;
+            if (campaign.levels == null) return;
+
+            for (int i = 0; i < campaign.levels.Length; i++)
+            {
+                Level l = campaign.levels[i];
+                LevelProgress p = SaveManager.Instance.GetLevelProgress(l.levelID, isCoop);
+                if (p == null) continue;
+
+                l.bestScore = Mathf.Max(l.bestScore, p.bestScore);
+                if (p.bestTime > 0f)
+                {
+                    int minutes = (int)(p.bestTime / 60f);
+                    int seconds = (int)(p.bestTime % 60f);
+                    l.bestTime = $"{minutes:00}:{seconds:00}";
+                }
+                l.unlocked = l.unlocked || p.unlocked;
+                campaign.levels[i] = l;
+            }
         }
 
         private void OnDisable()
