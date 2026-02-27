@@ -1,4 +1,5 @@
 using System;
+using Gameplay.Coop;
 using Gameplay.Items;
 using Gameplay.Player;
 using Unity.Netcode;
@@ -29,6 +30,15 @@ namespace Gameplay.Workstations
 
         private float completedAtTime = -1f;
 
+        private NetworkVariable<ulong> claimedBy = new NetworkVariable<ulong>(
+            ulong.MaxValue,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+        );
+
+        private float claimExpireTime;
+        private const float ClaimDuration = 2f;
+
         public NetworkList<ushort> SlotItemIds { get; private set; }
 
         private NetworkVariable<WorkState> workState = new NetworkVariable<WorkState>(
@@ -57,6 +67,24 @@ namespace Gameplay.Workstations
         public event Action OnProgressChanged;
         public event Action OnInventoryChanged;
         public event Action OnOutputChanged;
+
+        public bool IsClaimedByOther(ulong clientId)
+        {
+            return claimedBy.Value != ulong.MaxValue
+                && claimedBy.Value != clientId
+                && Time.time < claimExpireTime;
+        }
+
+        private void ClaimForClient(ulong clientId)
+        {
+            claimedBy.Value = clientId;
+            claimExpireTime = Time.time + ClaimDuration;
+        }
+
+        private void ReleaseClaim()
+        {
+            claimedBy.Value = ulong.MaxValue;
+        }
 
         private void Awake()
         {
@@ -104,6 +132,10 @@ namespace Gameplay.Workstations
         private void Update()
         {
             if (!IsServer) return;
+
+            if (claimedBy.Value != ulong.MaxValue && Time.time >= claimExpireTime)
+                ReleaseClaim();
+
             if (completionGracePeriod <= 0f) return;
             if (workState.Value != WorkState.Completed) return;
             if (completedAtTime < 0f) return;
@@ -514,6 +546,7 @@ namespace Gameplay.Workstations
             completedAtTime = -1f;
             workState.Value = WorkState.Idle;
             workProgress.Value = 0f;
+            ReleaseClaim();
             ClearInventoryServer();
             ClearOutputServer();
         }
@@ -561,9 +594,11 @@ namespace Gameplay.Workstations
             if (!IsServer) return;
             if (workState.Value == WorkState.Working || workState.Value == WorkState.Completed) return;
 
-            EnsureSlotCountServer();
-
             ulong clientId = rpcParams.Receive.SenderClientId;
+            if (IsClaimedByOther(clientId)) return;
+            ClaimForClient(clientId);
+
+            EnsureSlotCountServer();
             PlayerCarry carry = GetCarryForClient(clientId);
             if (carry == null)
                 return;
@@ -600,6 +635,7 @@ namespace Gameplay.Workstations
 
             SlotItemIds[empty] = held;
             carry.ClearHeldItemServer();
+            CoopGameManager.Instance?.RecordDeposit(clientId);
 
             AutoStartIfReady();
         }
@@ -619,9 +655,11 @@ namespace Gameplay.Workstations
             if (!IsServer) return;
             if (workState.Value == WorkState.Working) return;
 
-            EnsureSlotCountServer();
-
             ulong clientId = rpcParams.Receive.SenderClientId;
+            if (IsClaimedByOther(clientId)) return;
+            ClaimForClient(clientId);
+
+            EnsureSlotCountServer();
             PlayerCarry carry = GetCarryForClient(clientId);
             if (carry == null) return;
 
@@ -662,6 +700,8 @@ namespace Gameplay.Workstations
             if (!HasAnyOutput()) return;
 
             ulong clientId = rpcParams.Receive.SenderClientId;
+            if (IsClaimedByOther(clientId)) return;
+            ClaimForClient(clientId);
             PlayerCarry carry = GetCarryForClient(clientId);
             if (carry == null) return;
 
@@ -674,6 +714,7 @@ namespace Gameplay.Workstations
                 {
                     carry.SetHeldItemServer(OutputSlotIds[i]);
                     OutputSlotIds[i] = NoneId;
+                    CoopGameManager.Instance?.RecordCollection(clientId);
 
                     if (!HasAnyOutput())
                     {
@@ -718,6 +759,8 @@ namespace Gameplay.Workstations
             if (!HasAnyOutput()) return;
 
             ulong clientId = rpcParams.Receive.SenderClientId;
+            if (IsClaimedByOther(clientId)) return;
+            ClaimForClient(clientId);
             PlayerCarry carry = GetCarryForClient(clientId);
             if (carry == null) return;
             if (!carry.IsHoldingServer()) return;

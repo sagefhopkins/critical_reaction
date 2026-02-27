@@ -83,6 +83,13 @@ For this capstone, the **Beta Taskks** are defined as :
 - **MVP Progress:** 4 of 4 milestones complete
 - **Beta Progress:** 29 of 36 milestones complete
 
+## Beta Completion Objectives
+
+- A complete recipe can be executed.
+- Level 1 is playable start-to-finish
+- Co-op multiplayer works
+- All UI is functional
+
 Core systems work: movement, item carrying, storage racks, and the Scale workstation. Networking uses Unity Netcode with server-authoritative sync. Order/delivery system is next.
 
 ---

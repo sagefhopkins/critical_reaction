@@ -195,6 +195,9 @@ namespace Gameplay.Player
         {
             if (currentWorkstation == null || carry == null) return;
 
+            if (currentWorkstation.IsClaimedByOther(NetworkManager.Singleton.LocalClientId))
+                return;
+
             bool isHolding = carry.IsHoldingLocal;
             WorkState state = currentWorkstation.CurrentWorkState;
 

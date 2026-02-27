@@ -1,4 +1,5 @@
 using System;
+using Gameplay.Save;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -390,6 +391,16 @@ namespace UX.Options
             PlayerPrefs.SetInt("Fullscreen", fullScreen ? 1 : 0);
             PlayerPrefs.SetString("PlayerName", playerName ?? string.Empty);
             PlayerPrefs.Save();
+
+            if (SaveManager.Instance != null)
+            {
+                SaveManager.Instance.Data.settings.musicVolume = musicVolume;
+                SaveManager.Instance.Data.settings.sfxVolume = sfxVolume;
+                SaveManager.Instance.Data.settings.resolutionOption = resolutionOption;
+                SaveManager.Instance.Data.settings.fullScreen = fullScreen;
+                SaveManager.Instance.Data.playerName = playerName;
+                SaveManager.Instance.Save();
+            }
 
             BackToMainMenu();
         }
