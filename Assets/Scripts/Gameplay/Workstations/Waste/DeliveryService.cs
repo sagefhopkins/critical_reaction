@@ -20,16 +20,14 @@ namespace Gameplay.Workstations
         }
         public void ValidateBeforeDispatch(IEnumerable<Batch> batches)
         {
-
             var invalid = batches
-                .Where(b => b != null && b.Status == BatchStatus.Waste)
+                .Where(b => b.Status == BatchStatus.Waste)
                 .ToList();
 
             if (invalid.Any())
             {
                 throw new InvalidOperationException($"Cannot deliver {invalid.Count} waste batch(es).");
             }
-
         }
     }
 }

@@ -537,6 +537,8 @@ namespace Gameplay.Workstations
             matchedRecipe = null;
             workState.Value = WorkState.Idle;
             workProgress.Value = 0f;
+            ClearInventoryServer();
+            ClearOutputServer();
         }
 
         public void FullResetServer()
