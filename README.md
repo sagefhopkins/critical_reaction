@@ -66,22 +66,22 @@ For this capstone, the **Beta Taskks** are defined as :
 
 ### Week Four - Campaign Progression and Multiplayer
 
-- [ ] Implement campaign linear unlock rules
-- [ ] Implement medal/grade scoring (Stars / Bronze/Silver/Gold)
-- [ ] Implement save triggers (post-level + return to campaign map)
-- [ ] Implement saved data model (progress, best score/time, tutorial flags, settings)
-- [ ] Enforce "no mid-level save" ----------
-- [ ] Implement SQLite persistence layer (profiles + campaign progress)
-- [ ] Implement simultaneous station use rules + locking
-- [ ] Implement co-op role-emergence balancing instrumentation
-- [ ] Bugfix : Blank screen when backing out of lobby to main menu and reopening Coop menu
+- [x] Implement campaign linear unlock rules
+- [x] Implement medal/grade scoring (Stars / Bronze/Silver/Gold)
+- [x] Implement save triggers (post-level + return to campaign map)
+- [x] Implement saved data model (progress, best score/time, tutorial flags, settings)
+- [x] Enforce "no mid-level save" ----------
+- [x] Implement SQLite persistence layer (profiles + campaign progress)
+- [x] Implement simultaneous station use rules + locking
+- [x] Implement co-op role-emergence balancing instrumentation
+- [x] Bugfix : Blank screen when backing out of lobby to main menu and reopening Coop menu
 ---
 
 ## Project Status
 
 - **Status:** Beta implementations
 - **MVP Progress:** 4 of 4 milestones complete
-- **Beta Progress:** 29 of 36 milestones complete
+- **Beta Progress:** 36 of 36 milestones complete
 
 ## Beta Completion Objectives
 
