@@ -6,8 +6,6 @@ namespace Gameplay.Workstations
     {
         Valid,
         Degraded,
-        Waste
+        Waste 
     }
 }
-
-
