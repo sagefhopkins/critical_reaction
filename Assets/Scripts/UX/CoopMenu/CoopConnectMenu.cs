@@ -28,6 +28,8 @@ namespace UX.CoopMenu
             if (hostCodeText != null) hostCodeText.text = string.Empty;
             if (statusText != null) statusText.text = string.Empty;
             if (joinCodeInput != null) joinCodeInput.text = string.Empty;
+
+            if (controlPanel != null) controlPanel.SetActive(true);
         }
 
         public async void HostLobby()

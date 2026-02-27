@@ -25,8 +25,19 @@ namespace Gameplay.Workstations
         [Header("Output Renderers (size 5)")]
         [SerializeField] private SpriteRenderer[] outputRenderers;
 
+        [Header("Timer Bar")]
+        [SerializeField] private SpriteRenderer timerBarFrame;
+        [SerializeField] private SpriteRenderer timerBarFill;
+        [SerializeField] private Sprite fillNormalSprite;
+        [SerializeField] private Sprite fillWarningSprite;
+        [SerializeField] private Sprite fillCriticalSprite;
+        [SerializeField] private float warningThreshold = 0.65f;
+        [SerializeField] private float criticalThreshold = 0.85f;
+
         private int ghostRecipeIndex;
         private float ghostCycleTimer;
+        private Transform timerBarFillTransform;
+        private Vector3 timerBarFillBaseScale;
 
         private void Awake()
         {
@@ -69,25 +80,6 @@ namespace Gameplay.Workstations
 
                 workstation.OnWorkStateChanged -= OnWorkStateChanged;
                 workstation.OnProgressChanged -= OnProgressChanged;
-            }
-        }
-
-        private void Update()
-        {
-            if (workstation == null) return;
-            if (workstation.CurrentWorkState != WorkState.Idle) return;
-
-            var recipes = workstation.Recipes;
-            if (recipes == null || recipes.Length <= 1) return;
-
-            if (HasAnyDepositedItem() && CountTiedBestRecipes() <= 1) return;
-
-            ghostCycleTimer += Time.deltaTime;
-            if (ghostCycleTimer >= ghostCycleDuration)
-            {
-                ghostCycleTimer = 0f;
-                ghostRecipeIndex++;
-                RefreshSlots();
             }
         }
 

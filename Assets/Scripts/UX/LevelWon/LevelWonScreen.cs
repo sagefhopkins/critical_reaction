@@ -1,5 +1,7 @@
 using Gameplay.Coop;
+using Gameplay.Save;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 using UX.Options;
 
@@ -16,6 +18,8 @@ namespace UX.LevelWon
         [Header("UI")]
         [SerializeField] private GameObject menuRoot;
         [SerializeField] private TMP_Text titleText;
+        [SerializeField] private TMP_Text starsText;
+        [SerializeField] private TMP_Text timeText;
         [SerializeField] private TMP_Text[] optionTexts;
         [SerializeField] private Color selectedColor = Color.yellow;
         [SerializeField] private Color defaultColor = Color.white;
@@ -23,6 +27,8 @@ namespace UX.LevelWon
 
         private int selectedIndex;
         private bool isActive;
+        private int lastStars;
+        private float lastTimeRemaining;
 
         private int OptionCount => optionTexts != null ? optionTexts.Length : 0;
 
@@ -44,13 +50,19 @@ namespace UX.LevelWon
         private void OnEnable()
         {
             if (CoopGameManager.Instance != null)
+            {
                 CoopGameManager.Instance.OnLevelWon += HandleLevelWon;
+                CoopGameManager.Instance.OnLevelResults += HandleLevelResults;
+            }
         }
 
         private void OnDisable()
         {
             if (CoopGameManager.Instance != null)
+            {
                 CoopGameManager.Instance.OnLevelWon -= HandleLevelWon;
+                CoopGameManager.Instance.OnLevelResults -= HandleLevelResults;
+            }
         }
 
         private void Start()
@@ -66,12 +78,30 @@ namespace UX.LevelWon
             {
                 CoopGameManager.Instance.OnLevelWon -= HandleLevelWon;
                 CoopGameManager.Instance.OnLevelWon += HandleLevelWon;
+                CoopGameManager.Instance.OnLevelResults -= HandleLevelResults;
+                CoopGameManager.Instance.OnLevelResults += HandleLevelResults;
             }
         }
 
         private void HandleLevelWon()
         {
             ShowScreen();
+        }
+
+        private void HandleLevelResults(int stars, float timeRemaining)
+        {
+            lastStars = stars;
+            lastTimeRemaining = timeRemaining;
+
+            if (starsText != null)
+                starsText.text = FormatStars(stars);
+
+            if (timeText != null)
+            {
+                int minutes = (int)(timeRemaining / 60f);
+                int seconds = (int)(timeRemaining % 60f);
+                timeText.text = $"{minutes:00}:{seconds:00}";
+            }
         }
 
         private void Update()
@@ -120,6 +150,7 @@ namespace UX.LevelWon
 
         private void SelectNextLevel()
         {
+            SaveResult();
             HideScreen();
             if (PauseManager.Instance != null)
                 PauseManager.Instance.RequestNextLevel();
@@ -127,9 +158,22 @@ namespace UX.LevelWon
 
         private void SelectQuit()
         {
+            SaveResult();
             HideScreen();
             if (PauseManager.Instance != null)
                 PauseManager.Instance.RequestQuit();
+        }
+
+        private void SaveResult()
+        {
+            if (SaveManager.Instance == null) return;
+            if (CoopGameManager.Instance == null) return;
+
+            int levelId = CoopGameManager.Instance.LevelId.Value;
+            bool isCoop = NetworkManager.Singleton != null && NetworkManager.Singleton.IsHost;
+            PlayerLevelStats[] stats = CoopGameManager.Instance.GetAllPlayerStats();
+
+            SaveManager.Instance.RecordLevelResult(levelId, lastStars, lastTimeRemaining, stats, isCoop);
         }
 
         private void ShowScreen()
@@ -187,6 +231,17 @@ namespace UX.LevelWon
 
                 t.color = Color.Lerp(defaultColor, selectedColor, BlinkT);
             }
+        }
+
+        private static string FormatStars(int filled)
+        {
+            int f = Mathf.Clamp(filled, 0, 3);
+            int e = 3 - f;
+
+            string s = string.Empty;
+            for (int i = 0; i < f; i++) s += "★";
+            for (int i = 0; i < e; i++) s += "☆";
+            return s;
         }
     }
 }

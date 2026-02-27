@@ -10,9 +10,13 @@ namespace Gameplay.Workstations
     {
         public double CalculateDeliverableQuantity(IEnumerable<Batch> batches)
         {
+            if (batches == null)
+            {
+                return 0.0;
+            }
             return batches
-                 .Where(b => b.IsDeliverable)
-                 .Sum(b => b.ActualYield);
+                .Where(b => b != null && b.IsDeliverable)
+                .Sum(b => b.ActualYield);
         }
         public void ValidateBeforeDispatch(IEnumerable<Batch> batches)
         {
