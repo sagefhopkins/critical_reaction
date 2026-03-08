@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Gameplay.Player;
 using Gameplay.Save;
@@ -61,6 +62,7 @@ namespace Gameplay.Coop
 
         private LevelConfig currentLevelConfig;
         private GameObject currentLayoutInstance;
+        private List<NetworkObject> spawnedNetworkObjects = new List<NetworkObject>();
         private Dictionary<ulong, PlayerLevelStats> playerStats = new Dictionary<ulong, PlayerLevelStats>();
 
         public float ElapsedTime => elapsedTime.Value;
@@ -254,18 +256,30 @@ namespace Gameplay.Coop
 
         private void Begin(int levelId)
         {
-            Debug.Log($"Level {levelId} starting");
+            CacheLevelConfig(levelId);
 
             if (IsServer)
             {
                 playerStats.Clear();
-                LoadLevelConfig(levelId);
-                ResetAllWorkstations();
+                ApplyLevelConfigServer();
+                StartCoroutine(SpawnLayoutDeferred(
+                    currentLevelConfig != null ? currentLevelConfig.LayoutPrefab : null));
                 ResetAllPlayers();
                 elapsedTime.Value = 0f;
                 deliveredCount.Value = 0;
-                levelActive.Value = true;
             }
+            else
+            {
+                SpawnLayoutClient(currentLevelConfig != null ? currentLevelConfig.LayoutPrefab : null);
+            }
+        }
+
+        private IEnumerator SpawnLayoutDeferred(GameObject layoutPrefab)
+        {
+            yield return null;
+            SpawnLayout(layoutPrefab);
+            ResetAllWorkstations();
+            levelActive.Value = true;
         }
 
         private void ResetAllWorkstations()
@@ -304,35 +318,40 @@ namespace Gameplay.Coop
             ResetAllPlayers();
         }
 
-        private void LoadLevelConfig(int levelId)
+        public void CleanupLayoutClient()
+        {
+            if (currentLayoutInstance != null)
+            {
+                Destroy(currentLayoutInstance);
+                currentLayoutInstance = null;
+            }
+        }
+
+        private void CacheLevelConfig(int levelId)
         {
             if (levelDatabase == null)
-            {
-                Debug.LogWarning("No LevelDatabase assigned to CoopGameManager");
                 return;
-            }
 
             if (!levelDatabase.TryGetLevel(levelId, out LevelConfig config))
-            {
-                Debug.LogWarning($"Level {levelId} not found in database");
                 return;
-            }
 
             currentLevelConfig = config;
             levelTimeLimit = config.TimeLimit;
-            targetCount.Value = config.TotalTargetCount;
-            targetCompoundName.Value = config.PrimaryTargetName;
+        }
+
+        private void ApplyLevelConfigServer()
+        {
+            if (!IsServer || currentLevelConfig == null) return;
+
+            targetCount.Value = currentLevelConfig.TotalTargetCount;
+            targetCompoundName.Value = currentLevelConfig.PrimaryTargetName;
 
             Orders.Clear();
-            if (config.Orders != null)
+            if (currentLevelConfig.Orders != null)
             {
-                for (int i = 0; i < config.Orders.Length; i++)
-                    Orders.Add(config.Orders[i].ToOrderData());
+                for (int i = 0; i < currentLevelConfig.Orders.Length; i++)
+                    Orders.Add(currentLevelConfig.Orders[i].ToOrderData());
             }
-
-            SpawnLayout(config.LayoutPrefab);
-
-            Debug.Log($"Loaded level config: {config.LevelName}, Time: {config.TimeLimit}s, Orders: {(config.Orders != null ? config.Orders.Length : 0)}");
         }
 
         private void SpawnLayout(GameObject layoutPrefab)
@@ -345,27 +364,138 @@ namespace Gameplay.Coop
             }
 
             if (layoutPrefab == null)
-            {
-                Debug.LogWarning("No layout prefab assigned for this level");
                 return;
-            }
 
             currentLayoutInstance = Instantiate(layoutPrefab);
             SpawnAllNetworkObjects(currentLayoutInstance);
         }
 
+        private void SpawnLayoutClient(GameObject layoutPrefab)
+        {
+            if (currentLayoutInstance != null)
+            {
+                Destroy(currentLayoutInstance);
+                currentLayoutInstance = null;
+            }
+
+            if (layoutPrefab == null) return;
+
+            currentLayoutInstance = Instantiate(layoutPrefab);
+
+            var networkObjects = currentLayoutInstance.GetComponentsInChildren<NetworkObject>(true);
+            for (int i = networkObjects.Length - 1; i >= 0; i--)
+            {
+                if (networkObjects[i] != null)
+                    Destroy(networkObjects[i].gameObject);
+            }
+        }
+
         private void SpawnAllNetworkObjects(GameObject root)
         {
+            spawnedNetworkObjects.Clear();
+
             var networkObjects = root.GetComponentsInChildren<NetworkObject>(true);
+            var replacements = new List<(NetworkObject prefab, GameObject source, Vector3 pos, Quaternion rot, Vector3 scale)>();
+
             foreach (var netObj in networkObjects)
             {
-                if (!netObj.IsSpawned)
+                if (NetworkManager.NetworkConfig.Prefabs.NetworkPrefabOverrideLinks
+                        .ContainsKey(netObj.PrefabIdHash))
+                {
                     netObj.Spawn(true);
+                    spawnedNetworkObjects.Add(netObj);
+                    continue;
+                }
+
+                NetworkObject registeredPrefab = FindRegisteredPrefab(netObj);
+                if (registeredPrefab == null)
+                    continue;
+
+                replacements.Add((
+                    registeredPrefab,
+                    netObj.gameObject,
+                    netObj.transform.position,
+                    netObj.transform.rotation,
+                    netObj.transform.localScale
+                ));
             }
+
+            foreach (var (prefab, source, pos, rot, scale) in replacements)
+            {
+                GameObject instance = Instantiate(prefab.gameObject, pos, rot);
+                instance.transform.localScale = scale;
+                CopyComponentSettings(source, instance);
+                Destroy(source);
+
+                NetworkObject no = instance.GetComponent<NetworkObject>();
+                if (no != null)
+                {
+                    no.Spawn(true);
+                    spawnedNetworkObjects.Add(no);
+                }
+            }
+        }
+
+        private void CopyComponentSettings(GameObject source, GameObject destination)
+        {
+            var srcWs = source.GetComponent<Workstation>();
+            var dstWs = destination.GetComponent<Workstation>();
+            if (srcWs != null && dstWs != null)
+                dstWs.InitializeFrom(srcWs);
+
+            var srcRack = source.GetComponent<StorageRack>();
+            var dstRack = destination.GetComponent<StorageRack>();
+            if (srcRack != null && dstRack != null)
+                dstRack.InitializeFrom(srcRack);
+
+            var srcDp = source.GetComponent<DeliveryPoint>();
+            var dstDp = destination.GetComponent<DeliveryPoint>();
+            if (srcDp != null && dstDp != null)
+                dstDp.InitializeFrom(srcDp);
+        }
+
+        private NetworkObject FindRegisteredPrefab(NetworkObject netObj)
+        {
+            string name = netObj.gameObject.name;
+            NetworkObject bestMatch = null;
+            int bestScore = 0;
+
+            foreach (var entry in NetworkManager.NetworkConfig.Prefabs.Prefabs)
+            {
+                if (entry.Prefab == null) continue;
+                var prefabNetObj = entry.Prefab.GetComponent<NetworkObject>();
+                if (prefabNetObj == null) continue;
+
+                string prefabName = entry.Prefab.name;
+                int score = 0;
+
+                if (prefabName == name)
+                    score = 3;
+                else if (prefabName.StartsWith(name))
+                    score = 2;
+                else if (name.StartsWith(prefabName))
+                    score = 2;
+                else if (prefabName.Contains(name) || name.Contains(prefabName))
+                    score = 1;
+
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    bestMatch = prefabNetObj;
+                }
+            }
+
+            return bestMatch;
         }
 
         private void DespawnAllNetworkObjects(GameObject root)
         {
+            for (int i = spawnedNetworkObjects.Count - 1; i >= 0; i--)
+            {
+                if (spawnedNetworkObjects[i] != null && spawnedNetworkObjects[i].IsSpawned)
+                    spawnedNetworkObjects[i].Despawn(true);
+            }
+            spawnedNetworkObjects.Clear();
             var networkObjects = root.GetComponentsInChildren<NetworkObject>(true);
             foreach (var netObj in networkObjects)
             {

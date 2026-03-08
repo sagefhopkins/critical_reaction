@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Items.LabItem
   id: 10
   displayName: Jug of Toluene
+  description: A bulk supply jug of liquid toluene. Fill a flask at the graduated
+    cylinder to prepare a measured amount.
   sprite: {fileID: 21300000, guid: 009c316ae7652b345aeece86e2eba77f, type: 3}
   emptyMass: 0
   canContainParticles: 0

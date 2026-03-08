@@ -26,6 +26,5 @@ public class ReactionStepRunner : MonoBehaviour
     }
     private void OnStepTimerExpired()
     {
-        Debug.Log("Step failed - too slow.");
     }
 }

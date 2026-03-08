@@ -12,10 +12,7 @@ namespace Gameplay.Coop.Reactions
         public void StartStep(ReactionStep step)
         {
             if (active)
-            {
-                Debug.LogWarning("Step already active.");
                 return;
-            }
             currentStep = step;
             startTime = Time.time;
             active = true;
@@ -32,8 +29,6 @@ namespace Gameplay.Coop.Reactions
                 elapsed <= currentStep.WindowEnd
                     ? currentStep.FullYieldItem
                     : currentStep.DownGradedItem;
-
-            Debug.Log($"Step {currentStep.StepName} completed in {elapsed:F2}s. Outcome: {result?.name ?? "None"}");
 
             active = false;
             currentStep = null;

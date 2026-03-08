@@ -67,11 +67,11 @@ namespace Gameplay.Workstations.Scale
                 var image = gameObject.AddComponent<Image>();
                 image.color = new Color(1f, 1f, 1f, 0f);
                 image.raycastTarget = true;
-                Debug.Log("ScoopController: Added transparent Image component for drag detection.");
+                
             }
             else if (!graphic.raycastTarget)
             {
-                Debug.LogWarning("ScoopController: Graphic.raycastTarget is disabled. Enabling it for drag events.");
+
                 graphic.raycastTarget = true;
             }
 
@@ -86,7 +86,7 @@ namespace Gameplay.Workstations.Scale
                 if (scoopHead != null)
                 {
                     particleContainer = scoopHead;
-                    Debug.Log($"ScoopController: Using scoopHead as particleContainer: {scoopHead.name}");
+
                 }
                 else
                 {
@@ -95,12 +95,12 @@ namespace Gameplay.Workstations.Scale
                     particleContainer.SetParent(rectTransform, false);
                     particleContainer.anchoredPosition = Vector2.zero;
                     particleContainer.sizeDelta = new Vector2(heldParticleBoundsWidth * 2, heldParticleBoundsHeight * 2);
-                    Debug.Log("ScoopController: Created new ParticleContainer");
+
                 }
             }
             else
             {
-                Debug.Log($"ScoopController: particleContainer already assigned: {particleContainer.name}");
+
             }
         }
 
@@ -186,7 +186,7 @@ namespace Gameplay.Workstations.Scale
 
         public void OnBeginDrag(PointerEventData eventData)
         {
-            Debug.Log("ScoopController: OnBeginDrag");
+
             isDragging = true;
             if (canvasGroup != null)
                 canvasGroup.blocksRaycasts = false;
@@ -199,7 +199,7 @@ namespace Gameplay.Workstations.Scale
                     canvas = GetComponentInParent<Canvas>();
                 if (canvas == null)
                 {
-                    Debug.LogWarning("ScoopController: No Canvas found, cannot drag");
+
                     return;
                 }
             }
@@ -208,14 +208,14 @@ namespace Gameplay.Workstations.Scale
 
         public void OnEndDrag(PointerEventData eventData)
         {
-            Debug.Log("ScoopController: OnEndDrag");
+
             isDragging = false;
             if (canvasGroup != null)
                 canvasGroup.blocksRaycasts = true;
 
             if (currentOverBeaker != null && heldParticleCount > 0)
             {
-                Debug.Log($"ScoopController: Releasing over beaker, dumping {heldParticleCount} particles.");
+
                 DumpParticles();
             }
         }
@@ -243,17 +243,17 @@ namespace Gameplay.Workstations.Scale
 
             if (particlePrefab == null)
             {
-                Debug.LogError("ScoopController: particlePrefab is not assigned! Cannot pick up particles.");
+
                 return;
             }
             if (particleContainer == null)
             {
-                Debug.LogError("ScoopController: particleContainer is not assigned! Cannot pick up particles.");
+
                 return;
             }
             if (beaker.ParticleData == null)
             {
-                Debug.LogWarning("ScoopController: Beaker has no ParticleData configured.");
+
                 return;
             }
 
@@ -269,7 +269,7 @@ namespace Gameplay.Workstations.Scale
             heldParticleCount += 1;
             SpawnHeldParticle();
 
-            Debug.Log($"ScoopController: Picked up 1 particle. Now holding {heldParticleCount}.");
+
         }
 
         private ChemicalParticle FindTouchedParticle(Beaker beaker)
@@ -300,7 +300,7 @@ namespace Gameplay.Workstations.Scale
         {
             if (particlePrefab == null || particleContainer == null || heldParticleData == null)
             {
-                Debug.LogError($"ScoopController: SpawnHeldParticle failed - prefab:{particlePrefab != null}, container:{particleContainer != null}, data:{heldParticleData != null}");
+
                 return;
             }
 
@@ -327,7 +327,7 @@ namespace Gameplay.Workstations.Scale
 
             if (particle == null)
             {
-                Debug.LogError("ScoopController: Particle prefab does not have ChemicalParticle component!");
+
                 Destroy(go);
                 return;
             }
@@ -335,14 +335,14 @@ namespace Gameplay.Workstations.Scale
             particle.Initialize(heldParticleData);
             heldParticles.Add(particle);
 
-            Debug.Log($"ScoopController: Spawned particle. Parent: {particleContainer.name}, Position: {spawnPosition}, Active: {go.activeSelf}");
+
         }
 
         private void DropParticle(int index)
         {
             if (index < 0 || index >= heldParticles.Count) return;
 
-            Debug.Log($"ScoopController: Dropping particle at index {index}. Velocity: {currentVelocity.magnitude}");
+
 
             ChemicalParticle particle = heldParticles[index];
             heldParticles.RemoveAt(index);
@@ -356,17 +356,17 @@ namespace Gameplay.Workstations.Scale
         {
             if (currentOverBeaker == null)
             {
-                Debug.LogWarning("ScoopController: Cannot dump - not over a beaker.");
+
                 return;
             }
             if (heldParticleCount == 0)
             {
-                Debug.LogWarning("ScoopController: Cannot dump - no particles held.");
+
                 return;
             }
 
             int toDump = heldParticleCount;
-            Debug.Log($"ScoopController: Dumping {toDump} particles into beaker.");
+
 
             if (!currentOverBeaker.IsConfigured && heldParticleData != null)
             {

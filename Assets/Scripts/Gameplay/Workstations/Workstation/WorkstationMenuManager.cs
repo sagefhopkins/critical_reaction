@@ -40,15 +40,12 @@ namespace Gameplay.Workstations
                 Instance = null;
         }
 
-        // BETA SIMPLIFICATION: Workstation menus disabled — direct E-key interaction.
         public void OpenMenu(Workstation workstation, PlayerCarry localCarry)
         {
-            // No-op for beta: workstations use direct interaction, not menus.
         }
 
         public void CloseCurrentMenu()
         {
-            // No-op for beta: workstation menus are never opened.
         }
 
         public bool IsMenuOpen()

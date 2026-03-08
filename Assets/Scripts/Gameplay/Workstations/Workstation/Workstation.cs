@@ -57,6 +57,15 @@ namespace Gameplay.Workstations
 
         private Recipe matchedRecipe;
 
+        public void InitializeFrom(Workstation other)
+        {
+            workstationType = other.workstationType;
+            items = other.items;
+            recipes = other.recipes;
+            initialContents = other.initialContents;
+            completionGracePeriod = other.completionGracePeriod;
+        }
+
         public WorkstationType Type => workstationType;
         public WorkState CurrentWorkState => workState.Value;
         public float WorkProgress => workProgress.Value;
@@ -306,7 +315,6 @@ namespace Gameplay.Workstations
                 }
             }
 
-            Debug.LogWarning($"GetSpriteById: Could not find item with id {id} in items or recipe outputs");
             return null;
         }
 

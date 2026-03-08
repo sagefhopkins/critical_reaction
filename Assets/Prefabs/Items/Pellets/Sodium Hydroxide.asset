@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Items.LabItem
   id: 4
   displayName: Sodium Hydroxide
+  description: NaOH pellets, a strong base. Dissolve in water at a workstation to
+    prepare sodium hydroxide solution.
   sprite: {fileID: 21300000, guid: c5cf5ab724433821db1d919a50cc790a, type: 3}
   emptyMass: 0
   canContainParticles: 0
