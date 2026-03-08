@@ -20,6 +20,13 @@ namespace Gameplay.Workstations
         [Header("Item List Reference")]
         [SerializeField] private LabItem[] allItems;
 
+        public void InitializeFrom(DeliveryPoint other)
+        {
+            acceptedItems = other.acceptedItems;
+            acceptAnyItem = other.acceptAnyItem;
+            allItems = other.allItems;
+        }
+
         public bool CanAcceptItem(ushort itemId)
         {
             if (acceptAnyItem) return true;

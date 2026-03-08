@@ -2,6 +2,7 @@ using Gameplay.Player;
 using Gameplay.Workstations;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace UX
@@ -33,7 +34,10 @@ namespace UX
                 {
                     int idx = i;
                     if (slotButtons[i] != null)
+                    {
                         slotButtons[i].onClick.AddListener(() => OnClickSlot(idx));
+                        AddHoverEvents(slotButtons[i].gameObject, idx);
+                    }
                 }
             }
 
@@ -44,6 +48,40 @@ namespace UX
                 closeButton.onClick.AddListener(OnClickClose);
 
             Hide();
+        }
+
+        private void AddHoverEvents(GameObject target, int slotIndex)
+        {
+            var trigger = target.GetComponent<EventTrigger>();
+            if (trigger == null)
+                trigger = target.AddComponent<EventTrigger>();
+
+            var enterEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+            enterEntry.callback.AddListener(_ => OnSlotHoverEnter(slotIndex));
+            trigger.triggers.Add(enterEntry);
+
+            var exitEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
+            exitEntry.callback.AddListener(_ => OnSlotHoverExit());
+            trigger.triggers.Add(exitEntry);
+        }
+
+        private void OnSlotHoverEnter(int slotIndex)
+        {
+            if (rack == null) return;
+
+            ushort id = rack.GetSlotId(slotIndex);
+            if (id == 0) return;
+
+            var item = rack.GetLabItemById(id);
+            if (item == null) return;
+
+            ItemTooltip.EnsureInstance();
+            ItemTooltip.Instance?.Show(item);
+        }
+
+        private void OnSlotHoverExit()
+        {
+            ItemTooltip.Instance?.Hide();
         }
 
         public void Open(StorageRack targetRack, PlayerCarry localCarry)
@@ -71,6 +109,7 @@ namespace UX
         public void Close()
         {
             Unsubscribe();
+            ItemTooltip.Instance?.Hide();
             Hide();
         }
 
@@ -105,10 +144,11 @@ namespace UX
         {
             if (rack == null || carry == null) return;
             if (!carry.IsOwner) return;
-            
+
             if (carry.IsHoldingLocal)
                 return;
 
+            ItemTooltip.Instance?.Hide();
             carry.TryPickupFromRack(rack, slotIndex);
         }
 

@@ -38,7 +38,6 @@ namespace Gameplay.Workstations
             Unsubscribe();
         }
 
-        // BETA SIMPLIFICATION: Subscribe/Unsubscribe disabled — menus not used.
         protected virtual void Subscribe()
         {
         }

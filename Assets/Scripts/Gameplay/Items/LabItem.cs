@@ -8,6 +8,8 @@ namespace Gameplay.Items
     {
         [SerializeField] private ushort id;
         [SerializeField] private string displayName;
+        [TextArea(2, 4)]
+        [SerializeField] private string description;
         [SerializeField] private Sprite sprite;
 
         [Header("Mass Properties")]
@@ -25,6 +27,7 @@ namespace Gameplay.Items
 
         public ushort Id => id;
         public string DisplayName => displayName;
+        public string Description => description;
         public Sprite Sprite => sprite;
         public float EmptyMass => emptyMass;
         public bool CanContainParticles => canContainParticles;

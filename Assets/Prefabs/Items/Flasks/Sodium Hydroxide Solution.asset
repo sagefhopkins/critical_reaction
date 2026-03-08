@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Items.LabItem
   id: 8
   displayName: Sodium Hydroxide Solution
+  description: A flask of NaOH dissolved in water. A strong base used in
+    saponification and neutralization reactions.
   sprite: {fileID: 21300000, guid: 68a39a0940c778b1595df1f0f7eea348, type: 3}
   emptyMass: 0
   canContainParticles: 0

@@ -12,12 +12,9 @@ public class DeliveryTimerController : MonoBehaviour
     }
     private void HandleDeliveryFailed()
     {
-        Debug.Log("Delivery failed - time expired.");
     }
 
-    // Update is called once per frame
     void Update()
     {
-        
     }
 }

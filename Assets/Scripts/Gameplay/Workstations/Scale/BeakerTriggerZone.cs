@@ -31,7 +31,6 @@ namespace Gameplay.Workstations.Scale
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            Debug.Log($"BeakerTriggerZone: OnPointerEnter on {gameObject.name}, isSource: {isSourceBeaker}, pointerDrag: {eventData.pointerDrag?.name}");
             if (eventData.pointerDrag == null) return;
 
             ScoopController scoop = eventData.pointerDrag.GetComponent<ScoopController>();
@@ -39,13 +38,11 @@ namespace Gameplay.Workstations.Scale
             {
                 currentScoop = scoop;
                 scoop.SetOverBeaker(beaker);
-                Debug.Log($"BeakerTriggerZone: Scoop entered {gameObject.name}, set over beaker");
             }
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            Debug.Log($"BeakerTriggerZone: OnPointerExit on {gameObject.name}");
             if (currentScoop != null)
             {
                 currentScoop.ClearOverBeaker(beaker);
