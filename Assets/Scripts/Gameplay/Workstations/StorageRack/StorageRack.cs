@@ -19,6 +19,15 @@ namespace Gameplay.Workstations
         [Header("Behaviour")]
         [SerializeField] private bool infiniteSupply;
 
+        public void InitializeFrom(StorageRack other)
+        {
+            items = other.items;
+            initialContents = other.initialContents;
+            infiniteSupply = other.infiniteSupply;
+        }
+
+        public bool IsInfiniteSupply => infiniteSupply;
+
         public NetworkList<ushort> SlotItemIds { get; private set; }
 
         private void Awake()
@@ -97,6 +106,17 @@ namespace Gameplay.Workstations
         public Sprite GetSpriteForItemId(ushort id)
         {
             return GetSpriteById(id);
+        }
+
+        public LabItem GetLabItemById(ushort id)
+        {
+            if (id == NoneId || items == null) return null;
+            for (int i = 0; i < items.Length; i++)
+            {
+                if (items[i] != null && items[i].Id == id)
+                    return items[i];
+            }
+            return null;
         }
 
         public bool HasEmptySlotClient()

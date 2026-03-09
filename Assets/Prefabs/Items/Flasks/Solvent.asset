@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Items.LabItem
   id: 3
   displayName: Solvent
+  description: A flask of organic solvent. Used to dissolve, dilute, or extract
+    chemical compounds.
   sprite: {fileID: 21300000, guid: f1f4de87f8d564427a4e826442bbd8c4, type: 3}
   emptyMass: 0
   canContainParticles: 0

@@ -33,7 +33,6 @@ namespace UX
 
         public void OpenStorageRack(StorageRack rack, PlayerCarry carry)
         {
-            Debug.Log($"InteractionMenus.OpenStorageRack called for rack: {rack?.name}");
             CloseAll();
 
             if (storageRackMenu == null || rack == null || carry == null)
@@ -46,10 +45,8 @@ namespace UX
             storageRackMenu.Open(rack, carry);
         }
 
-        // BETA SIMPLIFICATION: Workstation menus disabled — direct E-key interaction.
         public void OpenWorkstation(Workstation workstation, PlayerCarry carry)
         {
-            // No-op for beta: workstations use direct interaction, not menus.
         }
 
         public void CloseAll()

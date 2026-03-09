@@ -73,7 +73,6 @@ namespace Gameplay.Items
             if (ingredients == null || ingredients.Length == 0)
                 return false;
 
-            // Count how many of this item the recipe needs
             int neededCount = 0;
             for (int i = 0; i < ingredients.Length; i++)
             {
@@ -84,7 +83,6 @@ namespace Gameplay.Items
             if (neededCount == 0)
                 return false;
 
-            // Count how many of this item are already in the slots
             int alreadyPresent = 0;
             for (int s = 0; s < slotCount; s++)
             {

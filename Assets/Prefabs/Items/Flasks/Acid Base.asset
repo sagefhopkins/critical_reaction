@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Items.LabItem
   id: 2
   displayName: Acid Base
+  description: A flask of dissolved acid. Used as a reagent in synthesis and neutralization
+    reactions.
   sprite: {fileID: 21300000, guid: 50afcfbdad3924585be06c14d8ce8eb1, type: 3}
   emptyMass: 0
   canContainParticles: 0

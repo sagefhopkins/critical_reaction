@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Items.LabItem
   id: 5
   displayName: Toluene
+  description: "A flask of C\u2087H\u2088, an aromatic hydrocarbon. The primary starting
+    material for benzoic acid synthesis via oxidation."
   sprite: {fileID: 21300000, guid: b57dbf67a5d8e56c386e451afd272b74, type: 3}
   emptyMass: 0
   canContainParticles: 0

@@ -193,6 +193,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f420806f1aaea4e778cf9dad1201c008, type: 2}
   - {fileID: 11400000, guid: f420806f1aaea4e778cf9dad1201c008, type: 2}
   - {fileID: 11400000, guid: f420806f1aaea4e778cf9dad1201c008, type: 2}
+  infiniteSupply: 0
 --- !u!114 &8299008314429244159
 MonoBehaviour:
   m_ObjectHideFlags: 0

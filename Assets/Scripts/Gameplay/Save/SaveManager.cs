@@ -45,7 +45,7 @@ namespace Gameplay.Save
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning($"Failed to load save file: {e.Message}");
+
                     data = new SaveData();
                 }
             }
@@ -71,7 +71,7 @@ namespace Gameplay.Save
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"Failed to write save file: {e.Message}");
+
             }
         }
 
