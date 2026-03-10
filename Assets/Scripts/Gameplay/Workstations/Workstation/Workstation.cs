@@ -77,6 +77,11 @@ namespace Gameplay.Workstations
         public event Action OnInventoryChanged;
         public event Action OnOutputChanged;
 
+        public void RefreshVisuals()
+        {
+            OnWorkStateChanged?.Invoke();
+        }
+
         public bool IsClaimedByOther(ulong clientId)
         {
             return claimedBy.Value != ulong.MaxValue

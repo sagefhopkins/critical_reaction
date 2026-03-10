@@ -19,19 +19,34 @@ namespace Gameplay.Workstations
 
         public override void OnNetworkSpawn()
         {
-            if (rack != null && rack.SlotItemIds != null)
-                rack.SlotItemIds.OnListChanged += OnSlotsChanged;
+            if (rack != null)
+            {
+                if (rack.SlotItemIds != null)
+                    rack.SlotItemIds.OnListChanged += OnSlotsChanged;
+
+                rack.OnSettingsChanged += OnSettingsRefresh;
+            }
 
             RefreshAll();
         }
 
         public override void OnNetworkDespawn()
         {
-            if (rack != null && rack.SlotItemIds != null)
-                rack.SlotItemIds.OnListChanged -= OnSlotsChanged;
+            if (rack != null)
+            {
+                if (rack.SlotItemIds != null)
+                    rack.SlotItemIds.OnListChanged -= OnSlotsChanged;
+
+                rack.OnSettingsChanged -= OnSettingsRefresh;
+            }
         }
 
         private void OnSlotsChanged(NetworkListEvent<ushort> _)
+        {
+            RefreshAll();
+        }
+
+        private void OnSettingsRefresh()
         {
             RefreshAll();
         }

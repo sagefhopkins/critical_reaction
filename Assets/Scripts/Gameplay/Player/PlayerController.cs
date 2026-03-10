@@ -99,7 +99,7 @@ public class PlayerController : NetworkBehaviour
                 return;
             }
 
-            ReadFourDirInput();
+            ReadInput();
             UpdateLastMoveDir();
             ApplyLocalAnimFromInput();
             SendAnimStateIfChanged();
@@ -114,7 +114,7 @@ public class PlayerController : NetworkBehaviour
         rb.linearVelocity = input * moveSpeed;
     }
 
-    private void ReadFourDirInput()
+    private void ReadInput()
     {
         float x = 0f;
         float y = 0f;
@@ -130,10 +130,9 @@ public class PlayerController : NetworkBehaviour
         if (down) y = -1f;
         else if (up) y = 1f;
 
-        if (x != 0f && y != 0f)
-            y = 0f;
-
         input = new Vector2(x, y);
+        if (input.sqrMagnitude > 1f)
+            input.Normalize();
     }
 
     private void UpdateLastMoveDir()

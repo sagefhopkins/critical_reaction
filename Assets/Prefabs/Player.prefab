@@ -401,6 +401,7 @@ GameObject:
   - component: {fileID: 537676955484159075}
   - component: {fileID: 3191806694061522086}
   - component: {fileID: 3473813566014567158}
+  - component: {fileID: 6450333563609342836}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -684,6 +685,14 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   nameTag: {fileID: 264231667810278773}
   outline: {fileID: 8136966619899214314}
+--- !u!81 &6450333563609342836
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4097590501367952233}
+  m_Enabled: 1
 --- !u!1 &5733068425076427499
 GameObject:
   m_ObjectHideFlags: 0
