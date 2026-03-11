@@ -203,11 +203,26 @@ namespace Gameplay.Coop
                 {
                     int stars = CalculateStars();
                     float remaining = RemainingTime;
+
+                    SaveManager.Instance.RecordLevelResult(
+                        LevelId.Value,
+                        stars,
+                        remaining,
+                        GetAllPlayerStats(),
+                        true
+                    );
+
                     BroadcastLevelWonClientRpc();
                     BroadcastLevelResultsClientRpc(stars, remaining);
                 }
                 else
                 {
+                    SaveManager.Instance.RecordLevelFailure(
+                        LevelId.Value,
+                        GetAllPlayerStats(),
+                        true
+                    );
+
                     BroadcastLevelFailedClientRpc();
                 }
             }
