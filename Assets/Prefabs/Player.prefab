@@ -401,6 +401,7 @@ GameObject:
   - component: {fileID: 537676955484159075}
   - component: {fileID: 3191806694061522086}
   - component: {fileID: 3473813566014567158}
+  - component: {fileID: 6450333563609342836}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -537,6 +538,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   ShowTopMostFoldoutHeaderGroup: 1
   moveSpeed: 1.5
+  slickDamping: 5
+  pushSpeedMultiplier: 0.5
   rb: {fileID: 6428622452512127035}
   animator: {fileID: 9033173693189780118}
 --- !u!114 &372047059850327902
@@ -564,6 +567,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 324051af98e34d9e681fd46f1891c16d, type: 2}
   - {fileID: 11400000, guid: 3e9453f48c9c05b22a007821815cfe5c, type: 2}
   heldRenderer: {fileID: 9134670580467709846}
+  mopSprite: {fileID: -5413004454740961715, guid: a5cd3a50fa7f14f6ca141ab686b24cd4, type: 3}
 --- !u!114 &6422162413954739525
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -684,6 +688,14 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   nameTag: {fileID: 264231667810278773}
   outline: {fileID: 8136966619899214314}
+--- !u!81 &6450333563609342836
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4097590501367952233}
+  m_Enabled: 1
 --- !u!1 &5733068425076427499
 GameObject:
   m_ObjectHideFlags: 0

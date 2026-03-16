@@ -15,6 +15,7 @@ namespace Gameplay.Player
 
         [Header("Held Visuals")]
         [SerializeField] private SpriteRenderer heldRenderer;
+        [SerializeField] private Sprite mopSprite;
 
         private NetworkVariable<ushort> heldItemId = new NetworkVariable<ushort>(
             NoneId,
@@ -33,35 +34,58 @@ namespace Gameplay.Player
                 heldRenderer = GetComponentInChildren<SpriteRenderer>(true);
         }
 
+        private PlayerController playerController;
+
         public override void OnNetworkSpawn()
         {
+            playerController = GetComponent<PlayerController>();
+
             heldItemId.OnValueChanged += OnHeldChanged;
-            ApplyHeldVisual(heldItemId.Value);
+
+            if (playerController != null)
+                playerController.OnHasMopChanged += OnMopChanged;
+
+            RefreshVisual();
         }
 
         public override void OnNetworkDespawn()
         {
             heldItemId.OnValueChanged -= OnHeldChanged;
+
+            if (playerController != null)
+                playerController.OnHasMopChanged -= OnMopChanged;
         }
 
         private void OnHeldChanged(ushort prev, ushort next)
         {
-            ApplyHeldVisual(next);
+            RefreshVisual();
             HeldItemChanged?.Invoke();
         }
 
-        private void ApplyHeldVisual(ushort id)
+        private void OnMopChanged(bool hasMop)
+        {
+            RefreshVisual();
+        }
+
+        private void RefreshVisual()
         {
             if (heldRenderer == null) return;
 
-            if (id == NoneId)
+            if (playerController != null && playerController.HasMop)
+            {
+                heldRenderer.sprite = mopSprite;
+                heldRenderer.enabled = mopSprite != null;
+                return;
+            }
+
+            if (heldItemId.Value == NoneId)
             {
                 heldRenderer.sprite = null;
                 heldRenderer.enabled = false;
                 return;
             }
 
-            Sprite spr = GetSpriteById(id);
+            Sprite spr = GetSpriteById(heldItemId.Value);
             heldRenderer.sprite = spr;
             heldRenderer.enabled = spr != null;
         }

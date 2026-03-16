@@ -1,3 +1,4 @@
+using System;
 using Gameplay.Items;
 using Gameplay.Player;
 using Unity.Netcode;
@@ -24,6 +25,13 @@ namespace Gameplay.Workstations
             items = other.items;
             initialContents = other.initialContents;
             infiniteSupply = other.infiniteSupply;
+        }
+
+        public event Action OnSettingsChanged;
+
+        public void RefreshVisuals()
+        {
+            OnSettingsChanged?.Invoke();
         }
 
         public bool IsInfiniteSupply => infiniteSupply;
