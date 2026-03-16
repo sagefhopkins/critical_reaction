@@ -225,8 +225,48 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 9219589334087338299, guid: 8db4ce3739fc7cfc4beb8d4b0fd1143b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8338609328849219986}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1333866092931538744, guid: 8db4ce3739fc7cfc4beb8d4b0fd1143b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -6246952791648014783}
   m_SourcePrefab: {fileID: 100100000, guid: 8db4ce3739fc7cfc4beb8d4b0fd1143b, type: 3}
+--- !u!1 &1725574016033931584 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1333866092931538744, guid: 8db4ce3739fc7cfc4beb8d4b0fd1143b, type: 3}
+  m_PrefabInstance: {fileID: 391989399287996024}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &-6246952791648014783
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1725574016033931584}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2dfa67b6e2c8247d9a70ca22c907e790, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Workstations.SinkController
+  ShowTopMostFoldoutHeaderGroup: 1
+  workstation: {fileID: 5545093312887419260}
+  workDuration: 5
+  overflowTime: 12
+  spillSpawnRadius: 1.5
+  spillZonePrefab: {fileID: 2067048377532312, guid: c6293a4c29f5e46cdaaad273311c8736, type: 3}
+  spillColor:
+    serializedVersion: 2
+    rgba: 3372195920
+--- !u!114 &5545093312887419260 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5297500576795062020, guid: 8db4ce3739fc7cfc4beb8d4b0fd1143b, type: 3}
+  m_PrefabInstance: {fileID: 391989399287996024}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1725574016033931584}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b4ab2f65c1f3af458ede4d875acca28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Workstations.Workstation
 --- !u!4 &8827670922153826115 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 9219589334087338299, guid: 8db4ce3739fc7cfc4beb8d4b0fd1143b, type: 3}

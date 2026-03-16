@@ -538,6 +538,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   ShowTopMostFoldoutHeaderGroup: 1
   moveSpeed: 1.5
+  slickDamping: 5
+  pushSpeedMultiplier: 0.5
   rb: {fileID: 6428622452512127035}
   animator: {fileID: 9033173693189780118}
 --- !u!114 &372047059850327902
@@ -565,6 +567,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 324051af98e34d9e681fd46f1891c16d, type: 2}
   - {fileID: 11400000, guid: 3e9453f48c9c05b22a007821815cfe5c, type: 2}
   heldRenderer: {fileID: 9134670580467709846}
+  mopSprite: {fileID: -5413004454740961715, guid: a5cd3a50fa7f14f6ca141ab686b24cd4, type: 3}
 --- !u!114 &6422162413954739525
 MonoBehaviour:
   m_ObjectHideFlags: 0

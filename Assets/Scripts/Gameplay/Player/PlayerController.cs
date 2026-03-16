@@ -7,11 +7,32 @@ using UX.Options;
 public class PlayerController : NetworkBehaviour
 {
     [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float slickDamping = 5f;
+    [SerializeField] private float pushSpeedMultiplier = 0.5f;
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Animator animator;
 
     private Vector2 input;
     private Vector2 lastMoveDir = Vector2.down;
+    private int slickCount;
+    private int pushCount;
+
+    private NetworkVariable<bool> hasMop = new NetworkVariable<bool>(
+        false,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server
+    );
+
+    private NetworkVariable<bool> mopDirty = new NetworkVariable<bool>(
+        false,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server
+    );
+
+    public bool HasMop => hasMop.Value;
+    public bool IsMopDirty => mopDirty.Value;
+    public bool CanMop => hasMop.Value && !mopDirty.Value;
+    public event Action<bool> OnHasMopChanged;
 
     private AnimState lastSent;
 
@@ -71,11 +92,13 @@ public class PlayerController : NetworkBehaviour
         }
 
         animState.OnValueChanged += OnAnimStateChanged;
+        hasMop.OnValueChanged += HandleHasMopChanged;
     }
 
     public override void OnNetworkDespawn()
     {
         animState.OnValueChanged -= OnAnimStateChanged;
+        hasMop.OnValueChanged -= HandleHasMopChanged;
 
         if (rb != null)
             rb.linearVelocity = Vector2.zero;
@@ -111,7 +134,40 @@ public class PlayerController : NetworkBehaviour
         if (!IsOwner) return;
         if (rb == null) return;
 
-        rb.linearVelocity = input * moveSpeed;
+        float speed = moveSpeed;
+        if (pushCount > 0)
+            speed *= pushSpeedMultiplier;
+
+        Vector2 target = input * speed;
+
+        if (slickCount > 0)
+            rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, target, slickDamping * Time.fixedDeltaTime);
+        else
+            rb.linearVelocity = target;
+    }
+
+    public void EnterSlick() => slickCount++;
+    public void ExitSlick() => slickCount = Mathf.Max(0, slickCount - 1);
+    public void EnterPush() => pushCount++;
+    public void ExitPush() => pushCount = Mathf.Max(0, pushCount - 1);
+
+    private void HandleHasMopChanged(bool prev, bool next)
+    {
+        OnHasMopChanged?.Invoke(next);
+    }
+
+    public void SetHasMopServer(bool value)
+    {
+        if (!IsServer) return;
+        hasMop.Value = value;
+        if (!value)
+            mopDirty.Value = false;
+    }
+
+    public void SetMopDirtyServer()
+    {
+        if (!IsServer) return;
+        mopDirty.Value = true;
     }
 
     private void ReadInput()
