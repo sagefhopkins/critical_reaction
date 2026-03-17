@@ -64,6 +64,8 @@ namespace Gameplay.Coop
         private GameObject currentLayoutInstance;
         private List<NetworkObject> spawnedNetworkObjects = new List<NetworkObject>();
         private Dictionary<ulong, PlayerLevelStats> playerStats = new Dictionary<ulong, PlayerLevelStats>();
+        private ulong[] syncedObjectIds;
+        private int[] syncedLayoutIndices;
 
         public float ElapsedTime => elapsedTime.Value;
         public float RemainingTime => Mathf.Max(0f, levelTimeLimit - elapsedTime.Value);
@@ -286,6 +288,7 @@ namespace Gameplay.Coop
             else
             {
                 SpawnLayoutClient(currentLevelConfig != null ? currentLevelConfig.LayoutPrefab : null);
+                StartCoroutine(WaitForServerObjectsThenApplySettings());
             }
         }
 
@@ -294,7 +297,11 @@ namespace Gameplay.Coop
             yield return null;
             SpawnLayout(layoutPrefab);
             ResetAllWorkstations();
+            RefreshAllStorageRackVisuals();
             levelActive.Value = true;
+
+            if (syncedObjectIds != null && syncedObjectIds.Length > 0)
+                SyncLayoutSettingsClientRpc(syncedObjectIds, syncedLayoutIndices);
         }
 
         private void ResetAllWorkstations()
@@ -304,6 +311,16 @@ namespace Gameplay.Coop
             {
                 if (all[i] != null)
                     all[i].FullResetServer();
+            }
+        }
+
+        private void RefreshAllStorageRackVisuals()
+        {
+            StorageRack[] racks = FindObjectsByType<StorageRack>(FindObjectsSortMode.None);
+            for (int i = 0; i < racks.Length; i++)
+            {
+                if (racks[i] != null)
+                    racks[i].RefreshVisuals();
             }
         }
 
@@ -408,17 +425,20 @@ namespace Gameplay.Coop
         private void SpawnAllNetworkObjects(GameObject root)
         {
             spawnedNetworkObjects.Clear();
+            var mappings = new List<(ulong id, int index)>();
 
             var networkObjects = root.GetComponentsInChildren<NetworkObject>(true);
-            var replacements = new List<(NetworkObject prefab, GameObject source, Vector3 pos, Quaternion rot, Vector3 scale)>();
+            var replacements = new List<(NetworkObject prefab, GameObject source, Vector3 pos, Quaternion rot, Vector3 scale, int layoutIndex)>();
 
-            foreach (var netObj in networkObjects)
+            for (int i = 0; i < networkObjects.Length; i++)
             {
+                var netObj = networkObjects[i];
                 if (NetworkManager.NetworkConfig.Prefabs.NetworkPrefabOverrideLinks
                         .ContainsKey(netObj.PrefabIdHash))
                 {
                     netObj.Spawn(true);
                     spawnedNetworkObjects.Add(netObj);
+                    mappings.Add((netObj.NetworkObjectId, i));
                     continue;
                 }
 
@@ -431,11 +451,12 @@ namespace Gameplay.Coop
                     netObj.gameObject,
                     netObj.transform.position,
                     netObj.transform.rotation,
-                    netObj.transform.localScale
+                    netObj.transform.localScale,
+                    i
                 ));
             }
 
-            foreach (var (prefab, source, pos, rot, scale) in replacements)
+            foreach (var (prefab, source, pos, rot, scale, layoutIndex) in replacements)
             {
                 GameObject instance = Instantiate(prefab.gameObject, pos, rot);
                 instance.transform.localScale = scale;
@@ -447,7 +468,16 @@ namespace Gameplay.Coop
                 {
                     no.Spawn(true);
                     spawnedNetworkObjects.Add(no);
+                    mappings.Add((no.NetworkObjectId, layoutIndex));
                 }
+            }
+
+            syncedObjectIds = new ulong[mappings.Count];
+            syncedLayoutIndices = new int[mappings.Count];
+            for (int i = 0; i < mappings.Count; i++)
+            {
+                syncedObjectIds[i] = mappings[i].id;
+                syncedLayoutIndices[i] = mappings[i].index;
             }
         }
 
@@ -501,6 +531,81 @@ namespace Gameplay.Coop
             }
 
             return bestMatch;
+        }
+
+        private IEnumerator WaitForServerObjectsThenApplySettings()
+        {
+            if (currentLevelConfig == null || currentLevelConfig.LayoutPrefab == null)
+                yield break;
+
+            yield return null;
+
+            GameObject layoutPrefab = currentLevelConfig.LayoutPrefab;
+            int expectedWorkstations = layoutPrefab.GetComponentsInChildren<Workstation>(true).Length;
+            int expectedRacks = layoutPrefab.GetComponentsInChildren<StorageRack>(true).Length;
+            int expectedDeliveryPoints = layoutPrefab.GetComponentsInChildren<DeliveryPoint>(true).Length;
+
+            float timeout = 15f;
+            float elapsed = 0f;
+
+            while (elapsed < timeout)
+            {
+                int foundWorkstations = FindObjectsByType<Workstation>(FindObjectsSortMode.None).Length;
+                int foundRacks = FindObjectsByType<StorageRack>(FindObjectsSortMode.None).Length;
+                int foundDeliveryPoints = FindObjectsByType<DeliveryPoint>(FindObjectsSortMode.None).Length;
+
+                if (foundWorkstations >= expectedWorkstations &&
+                    foundRacks >= expectedRacks &&
+                    foundDeliveryPoints >= expectedDeliveryPoints)
+                    break;
+
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            RequestLayoutSettingsServerRpc();
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        private void RequestLayoutSettingsServerRpc(ServerRpcParams rpcParams = default)
+        {
+            if (syncedObjectIds == null || syncedObjectIds.Length == 0) return;
+            SyncLayoutSettingsClientRpc(syncedObjectIds, syncedLayoutIndices);
+        }
+
+        [ClientRpc]
+        private void SyncLayoutSettingsClientRpc(ulong[] networkObjectIds, int[] layoutChildIndices)
+        {
+            if (IsServer) return;
+            ApplySettingsFromMapping(networkObjectIds, layoutChildIndices);
+        }
+
+        private void ApplySettingsFromMapping(ulong[] networkObjectIds, int[] layoutChildIndices)
+        {
+            if (currentLevelConfig == null || currentLevelConfig.LayoutPrefab == null) return;
+
+            GameObject tempLayout = Instantiate(currentLevelConfig.LayoutPrefab);
+            var layoutNetObjs = tempLayout.GetComponentsInChildren<NetworkObject>(true);
+
+            for (int i = 0; i < networkObjectIds.Length; i++)
+            {
+                if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(networkObjectIds[i], out NetworkObject netObj))
+                    continue;
+
+                int layoutIdx = layoutChildIndices[i];
+                if (layoutIdx < 0 || layoutIdx >= layoutNetObjs.Length)
+                    continue;
+
+                CopyComponentSettings(layoutNetObjs[layoutIdx].gameObject, netObj.gameObject);
+
+                var ws = netObj.GetComponent<Workstation>();
+                if (ws != null) ws.RefreshVisuals();
+
+                var rack = netObj.GetComponent<StorageRack>();
+                if (rack != null) rack.RefreshVisuals();
+            }
+
+            Destroy(tempLayout);
         }
 
         private void DespawnAllNetworkObjects(GameObject root)

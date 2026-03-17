@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Gameplay.Workstations
 {
-    public class BurnerController : NetworkBehaviour
+    public class SinkController : NetworkBehaviour
     {
         [Header("References")]
         [SerializeField] private Workstation workstation;
@@ -13,11 +13,11 @@ namespace Gameplay.Workstations
         [Header("Settings")]
         [SerializeField] private float workDuration = 5f;
 
-        [Header("Overheat")]
-        [SerializeField] private float overheatTime = 10f;
+        [Header("Overflow")]
+        [SerializeField] private float overflowTime = 12f;
         [SerializeField] private float spillSpawnRadius = 1.5f;
         [SerializeField] private GameObject spillZonePrefab;
-        [SerializeField] private Color32 spillColor = new Color32(255, 120, 50, 200);
+        [SerializeField] private Color32 spillColor = new Color32(80, 160, 255, 200);
 
         private NetworkVariable<ulong> workingClientId = new NetworkVariable<ulong>(
             ulong.MaxValue,
@@ -27,7 +27,7 @@ namespace Gameplay.Workstations
 
         private float completedAtTime = -1f;
 
-        public event Action OnBurnerStateChanged;
+        public event Action OnSinkStateChanged;
 
         private void Awake()
         {
@@ -60,7 +60,7 @@ namespace Gameplay.Workstations
                     completedAtTime = -1f;
             }
 
-            OnBurnerStateChanged?.Invoke();
+            OnSinkStateChanged?.Invoke();
         }
 
         private void Update()
@@ -78,12 +78,12 @@ namespace Gameplay.Workstations
                     workstation.CompleteWorkServer();
                 }
             }
-            else if (workstation.CurrentWorkState == WorkState.Completed && overheatTime > 0f)
+            else if (workstation.CurrentWorkState == WorkState.Completed && overflowTime > 0f)
             {
-                if (completedAtTime > 0f && Time.time - completedAtTime >= overheatTime)
+                if (completedAtTime > 0f && Time.time - completedAtTime >= overflowTime)
                 {
                     SpawnSpillZone();
-                    workstation.FailWorkServer();
+                    workstation.FullResetServer();
                     completedAtTime = -1f;
                 }
             }
