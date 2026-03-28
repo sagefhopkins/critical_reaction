@@ -53,6 +53,12 @@ namespace Gameplay.Workstations
             NetworkVariableWritePermission.Server
         );
 
+        private NetworkVariable<float> dangerProgress = new NetworkVariable<float>(
+            0f,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+        );
+
         public NetworkList<ushort> OutputSlotIds { get; private set; }
 
         private Recipe matchedRecipe;
@@ -69,11 +75,13 @@ namespace Gameplay.Workstations
         public WorkstationType Type => workstationType;
         public WorkState CurrentWorkState => workState.Value;
         public float WorkProgress => workProgress.Value;
+        public float DangerProgress => dangerProgress.Value;
         public Recipe AssignedRecipe => matchedRecipe;
         public Recipe[] Recipes => recipes;
 
         public event Action OnWorkStateChanged;
         public event Action OnProgressChanged;
+        public event Action OnDangerProgressChanged;
         public event Action OnInventoryChanged;
         public event Action OnOutputChanged;
 
@@ -118,6 +126,7 @@ namespace Gameplay.Workstations
         {
             workState.OnValueChanged += HandleWorkStateChanged;
             workProgress.OnValueChanged += HandleProgressChanged;
+            dangerProgress.OnValueChanged += HandleDangerProgressChanged;
             SlotItemIds.OnListChanged += HandleInventoryChanged;
             OutputSlotIds.OnListChanged += HandleOutputChanged;
 
@@ -125,6 +134,7 @@ namespace Gameplay.Workstations
             {
                 workState.Value = WorkState.Idle;
                 workProgress.Value = 0f;
+                dangerProgress.Value = 0f;
                 matchedRecipe = null;
                 completedAtTime = -1f;
                 SlotItemIds.Clear();
@@ -139,6 +149,7 @@ namespace Gameplay.Workstations
         {
             workState.OnValueChanged -= HandleWorkStateChanged;
             workProgress.OnValueChanged -= HandleProgressChanged;
+            dangerProgress.OnValueChanged -= HandleDangerProgressChanged;
             SlotItemIds.OnListChanged -= HandleInventoryChanged;
             OutputSlotIds.OnListChanged -= HandleOutputChanged;
         }
@@ -177,6 +188,11 @@ namespace Gameplay.Workstations
         private void HandleProgressChanged(float prev, float next)
         {
             OnProgressChanged?.Invoke();
+        }
+
+        private void HandleDangerProgressChanged(float prev, float next)
+        {
+            OnDangerProgressChanged?.Invoke();
         }
 
         private void HandleInventoryChanged(NetworkListEvent<ushort> evt)
@@ -515,6 +531,12 @@ namespace Gameplay.Workstations
             workProgress.Value = Mathf.Clamp01(workProgress.Value + delta);
         }
 
+        public void SetDangerProgressServer(float progress)
+        {
+            if (!IsServer) return;
+            dangerProgress.Value = Mathf.Clamp01(progress);
+        }
+
         public void ClearInventoryServer()
         {
             if (!IsServer) return;
@@ -550,6 +572,7 @@ namespace Gameplay.Workstations
             matchedRecipe = null;
             workState.Value = WorkState.Idle;
             workProgress.Value = 0f;
+            dangerProgress.Value = 0f;
             ClearInventoryServer();
             ClearOutputServer();
         }
@@ -561,6 +584,7 @@ namespace Gameplay.Workstations
             completedAtTime = -1f;
             workState.Value = WorkState.Idle;
             workProgress.Value = 0f;
+            dangerProgress.Value = 0f;
             ReleaseClaim();
             ClearInventoryServer();
             ClearOutputServer();

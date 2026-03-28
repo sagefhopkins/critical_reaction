@@ -80,11 +80,17 @@ namespace Gameplay.Workstations
             }
             else if (workstation.CurrentWorkState == WorkState.Completed && overheatTime > 0f)
             {
-                if (completedAtTime > 0f && Time.time - completedAtTime >= overheatTime)
+                if (completedAtTime > 0f)
                 {
-                    SpawnSpillZone();
-                    workstation.FailWorkServer();
-                    completedAtTime = -1f;
+                    float elapsed = Time.time - completedAtTime;
+                    workstation.SetDangerProgressServer(Mathf.Clamp01(elapsed / overheatTime));
+
+                    if (elapsed >= overheatTime)
+                    {
+                        SpawnSpillZone();
+                        workstation.FailWorkServer();
+                        completedAtTime = -1f;
+                    }
                 }
             }
         }

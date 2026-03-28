@@ -4379,14 +4379,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.08235294, g: 0.11764706, b: 0.19215687, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 0b68d6d32818b46239805dd95e1ab42e, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -4737,8 +4737,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 320}
-  m_SizeDelta: {x: 523.643, y: 523.643}
+  m_AnchoredPosition: {x: -0.000030518, y: 425.34}
+  m_SizeDelta: {x: 850.676, y: 850.676}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &385465328
 MonoBehaviour:
@@ -9006,7 +9006,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MainMenu
   menuOptions:
-  - {fileID: 1591567775}
   - {fileID: 1416321771}
   - {fileID: 1925825127}
   - {fileID: 1250412082}
@@ -9015,10 +9014,23 @@ MonoBehaviour:
   selectedColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   defaultColor: {r: 0.94509804, g: 0.88235295, b: 0.7490196, a: 1}
   mainMenuPanel: {fileID: 1349984834}
-  campaignPanel: {fileID: 1800836149}
   coopPanel: {fileID: 100296703}
   optionsPanel: {fileID: 1824839419}
   creditsPanel: {fileID: 437499541}
+  coopSubMenuRoot: {fileID: 0}
+  coopSubMenuOptions: []
+  joinCodeRoot: {fileID: 0}
+  joinCodeInput: {fileID: 0}
+  coopStatusText: {fileID: 0}
+  relay: {fileID: 0}
+  coopConnectMenu: {fileID: 0}
+  maxClients: 3
+  menuCamera: {fileID: 519420031}
+  defaultZoom: 5
+  coopZoom: 3
+  defaultCameraPosition: {x: 0, y: 0, z: -10}
+  coopCameraPosition: {x: 0, y: 0, z: -10}
+  zoomSpeed: 5
 --- !u!1 &863281133
 GameObject:
   m_ObjectHideFlags: 0
@@ -10842,6 +10854,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CoopGameStarter
   ShowTopMostFoldoutHeaderGroup: 1
   gameplaySceneName: CoopGame
+  levelDatabase: {fileID: 0}
 --- !u!4 &1219653299
 Transform:
   m_ObjectHideFlags: 0
@@ -11828,7 +11841,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1349984835
 RectTransform:
   m_ObjectHideFlags: 0
@@ -11838,7 +11851,7 @@ RectTransform:
   m_GameObject: {fileID: 1349984834}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 385465327}
@@ -11848,8 +11861,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchoredPosition: {x: 4.1, y: 14.516}
+  m_SizeDelta: {x: 145.7479, y: 129.0323}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1379351411
 GameObject:
@@ -12713,6 +12726,57 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1429199155}
   m_CullTransparentMesh: 1
+--- !u!1 &1435835045
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1435835047}
+  - component: {fileID: 1435835046}
+  m_Layer: 0
+  m_Name: MusicManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1435835046
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1435835045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8aec8406fb5440cd8a5944c67429a5e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Audio.MusicManager
+  mainMenuMusic: {fileID: 8300000, guid: 85a501834adf64d3ca5162283d671d85, type: 3}
+  lobbyMusic: {fileID: 8300000, guid: 484bfafecd24c47eabaf1fdc3701cb59, type: 3}
+  gameStartTransition: {fileID: 8300000, guid: 96db3b788cc7b4bb392470e97e98e579, type: 3}
+  defaultCrossfadeDuration: 1.5
+  gameStartFadeOutDuration: 0.8
+  gameStartFadeInDelay: 0.3
+  maxVolume: 1
+--- !u!4 &1435835047
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1435835045}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.11009, y: -1.40862, z: 584.53326}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1442034940
 GameObject:
   m_ObjectHideFlags: 0
@@ -14235,7 +14299,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Start Campaign
+  m_text: Campaign
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 73d53d880523c47619cd6a80343bd60f, type: 2}
   m_sharedMaterial: {fileID: -904304366617217887, guid: 73d53d880523c47619cd6a80343bd60f, type: 2}
@@ -15421,7 +15485,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1800836150
 RectTransform:
   m_ObjectHideFlags: 0
@@ -18259,3 +18323,4 @@ SceneRoots:
   - {fileID: 588751100}
   - {fileID: 1565748318}
   - {fileID: 1379351413}
+  - {fileID: 1435835047}

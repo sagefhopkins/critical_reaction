@@ -140,6 +140,9 @@ namespace Gameplay.Coop
         [ClientRpc]
         private void QuitToMenuClientRpc()
         {
+            if (Audio.MusicManager.Instance != null)
+                Audio.MusicManager.Instance.PlayMainMenuMusic();
+
             if (NetworkManager.Singleton != null)
             {
                 NetworkManager.Singleton.Shutdown();

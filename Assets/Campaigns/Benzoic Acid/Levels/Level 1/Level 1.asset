@@ -16,17 +16,13 @@ MonoBehaviour:
   levelName: Standard Solution Setup
   layoutPrefab: {fileID: 4313882351668404019, guid: fe90b5358fb1173378e8c3bdacaf3719, type: 3}
   timeLimit: 300
-  orders:
-  - requiredProduct: {fileID: 11400000, guid: 26d3e880e502c0d179b065e4fb8ff2f1, type: 2}
-    requiredQuantity: 12
-    timeLimit: 0
-  - requiredProduct: {fileID: 11400000, guid: 3eda2b9dad94d673a89e06ad884a6247, type: 2}
-    requiredQuantity: 12
-    timeLimit: 0
-  - requiredProduct: {fileID: 11400000, guid: 6844584fca789afeea2dd12870046351, type: 2}
-    requiredQuantity: 12
-    timeLimit: 0
+  availableProducts:
+  - {fileID: 11400000, guid: 26d3e880e502c0d179b065e4fb8ff2f1, type: 2}
+  - {fileID: 11400000, guid: 6844584fca789afeea2dd12870046351, type: 2}
+  minItemsPerOrder: 1
+  maxItemsPerOrder: 2
+  music: {fileID: 8300000, guid: 8916a170ecc8e46eebef825bc7c2e65e, type: 3}
   starThresholds:
-    oneStar: 5
-    twoStarTimeRemaining: 7
-    threeStarTimeRemaining: 10
+    oneStar: 12
+    twoStarTimeRemaining: 18
+    threeStarTimeRemaining: 24

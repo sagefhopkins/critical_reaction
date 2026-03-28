@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 public class CoopGameStarter : NetworkBehaviour
     {
         [SerializeField] private string gameplaySceneName = "CoopGame";
+        [SerializeField] private LevelDatabase levelDatabase;
         private int pendingLevelId = -1;
 
         public override void OnNetworkSpawn()
@@ -27,6 +28,15 @@ public class CoopGameStarter : NetworkBehaviour
         public void RequestStart(int levelId)
         {
             if (NetworkManager == null || !NetworkManager.IsListening) return;
+
+            if (Audio.MusicManager.Instance != null)
+            {
+                AudioClip levelMusicClip = null;
+                if (levelDatabase != null && levelDatabase.TryGetLevel(levelId, out LevelConfig config))
+                    levelMusicClip = config.Music;
+                Audio.MusicManager.Instance.PlayGameStartTransition(levelMusicClip);
+            }
+
             RequestStartServerRpc(levelId);
         }
 

@@ -23,7 +23,6 @@ namespace UX.Options
         private enum Mode
         {
             Navigate,
-            Adjust,
             EditName
         }
 
@@ -145,12 +144,6 @@ namespace UX.Options
 
             HandleNavigationInput();
 
-            if (mode == Mode.Adjust)
-            {
-                HandleAdjustInput();
-                return;
-            }
-
             if (Input.GetKeyDown(KeyCode.Return))
                 ActivateSelected();
         }
@@ -189,6 +182,13 @@ namespace UX.Options
 
             if (prev != selectedIndex.y)
                 UpdateHighlight();
+
+            int delta = 0;
+            if (Input.GetKeyDown(KeyCode.LeftArrow)) delta = -1;
+            else if (Input.GetKeyDown(KeyCode.RightArrow)) delta = 1;
+
+            if (delta != 0)
+                TryAdjustOption(delta);
         }
 
         private void ActivateSelected()
@@ -201,14 +201,6 @@ namespace UX.Options
 
                 switch (id)
                 {
-                    case OptionId.MusicVolume:
-                    case OptionId.SfxVolume:
-                    case OptionId.Resolution:
-                    case OptionId.Fullscreen:
-                        mode = Mode.Adjust;
-                        UpdateHighlight();
-                        break;
-
                     case OptionId.Controls:
                         OpenMenu(controlsMenu);
                         break;
@@ -254,23 +246,10 @@ namespace UX.Options
             }
         }
 
-        private void HandleAdjustInput()
+        private void TryAdjustOption(int delta)
         {
-            if (Input.GetKeyDown(KeyCode.Return))
-            {
-                mode = Mode.Navigate;
-                UpdateHighlight();
-                return;
-            }
-
             int idx = Mathf.Clamp(selectedIndex.y, 0, TotalSelectableCount - 1);
             if (idx >= TextOptionCount) return;
-
-            int delta = 0;
-            if (Input.GetKeyDown(KeyCode.LeftArrow)) delta = -1;
-            else if (Input.GetKeyDown(KeyCode.RightArrow)) delta = 1;
-
-            if (delta == 0) return;
 
             OptionId id = (OptionId)idx;
 
@@ -279,6 +258,8 @@ namespace UX.Options
                 case OptionId.MusicVolume:
                     musicVolume = Mathf.Clamp(musicVolume + delta, 0, 100);
                     RefreshLine(OptionId.MusicVolume);
+                    if (Audio.MusicManager.Instance != null)
+                        Audio.MusicManager.Instance.SetVolume(musicVolume / 100f);
                     break;
 
                 case OptionId.SfxVolume:
@@ -415,6 +396,8 @@ namespace UX.Options
 
             ApplyFullscreen();
             ApplyResolution();
+            if (Audio.MusicManager.Instance != null)
+                Audio.MusicManager.Instance.SetVolume(musicVolume / 100f);
             RefreshAllLines();
             UpdateHighlight();
         }
