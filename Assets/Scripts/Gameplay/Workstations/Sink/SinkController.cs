@@ -80,11 +80,17 @@ namespace Gameplay.Workstations
             }
             else if (workstation.CurrentWorkState == WorkState.Completed && overflowTime > 0f)
             {
-                if (completedAtTime > 0f && Time.time - completedAtTime >= overflowTime)
+                if (completedAtTime > 0f)
                 {
-                    SpawnSpillZone();
-                    workstation.FullResetServer();
-                    completedAtTime = -1f;
+                    float elapsed = Time.time - completedAtTime;
+                    workstation.SetDangerProgressServer(Mathf.Clamp01(elapsed / overflowTime));
+
+                    if (elapsed >= overflowTime)
+                    {
+                        SpawnSpillZone();
+                        workstation.FullResetServer();
+                        completedAtTime = -1f;
+                    }
                 }
             }
         }

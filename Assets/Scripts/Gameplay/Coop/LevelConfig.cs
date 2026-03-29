@@ -26,8 +26,16 @@ namespace Gameplay.Coop
         [Header("Time")]
         [SerializeField] private float timeLimit = 300f;
 
-        [Header("Orders")]
-        [SerializeField] private OrderDefinition[] orders;
+        [Header("Dynamic Orders")]
+        [Tooltip("Pool of items that can be randomly requested on recipe trays.")]
+        [SerializeField] private LabItem[] availableProducts;
+        [Tooltip("Min items per tray order (1 or 2).")]
+        [SerializeField] [Range(1, 2)] private int minItemsPerOrder = 1;
+        [Tooltip("Max items per tray order (1 or 2).")]
+        [SerializeField] [Range(1, 2)] private int maxItemsPerOrder = 2;
+
+        [Header("Music")]
+        [SerializeField] private AudioClip music;
 
         [Header("Scoring")]
         [SerializeField] private StarThreshold starThresholds;
@@ -36,33 +44,11 @@ namespace Gameplay.Coop
         public string LevelName => levelName;
         public GameObject LayoutPrefab => layoutPrefab;
         public float TimeLimit => timeLimit;
+        public AudioClip Music => music;
         public StarThreshold StarThresholds => starThresholds;
-        public OrderDefinition[] Orders => orders;
+        public LabItem[] AvailableProducts => availableProducts;
+        public int MinItemsPerOrder => minItemsPerOrder;
+        public int MaxItemsPerOrder => maxItemsPerOrder;
 
-        public int TotalTargetCount
-        {
-            get
-            {
-                int total = 0;
-                if (orders != null)
-                {
-                    foreach (var o in orders)
-                        total += o.requiredQuantity;
-                }
-                return total;
-            }
-        }
-
-        public string PrimaryTargetName
-        {
-            get
-            {
-                if (orders == null || orders.Length == 0)
-                    return "Unknown";
-                if (orders[0].requiredProduct == null)
-                    return "Unknown";
-                return orders[0].requiredProduct.DisplayName;
-            }
-        }
     }
 }

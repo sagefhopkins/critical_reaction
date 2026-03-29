@@ -1,6 +1,7 @@
 using Gameplay.Items;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Gameplay.Workstations
 {
@@ -12,7 +13,8 @@ namespace Gameplay.Workstations
         [Header("Slot Renderers (size 5)")]
         [SerializeField] private SpriteRenderer[] slotRenderers;
 
-        [Header("Status Icon")]
+        [Header("Status Bubble")]
+        [SerializeField] private GameObject statusRoot;
         [SerializeField] private SpriteRenderer statusIcon;
         [SerializeField] private Sprite workingSprite;
         [SerializeField] private Sprite completedSprite;
@@ -26,18 +28,16 @@ namespace Gameplay.Workstations
         [SerializeField] private SpriteRenderer[] outputRenderers;
 
         [Header("Timer Bar")]
-        [SerializeField] private SpriteRenderer timerBarFrame;
-        [SerializeField] private SpriteRenderer timerBarFill;
-        [SerializeField] private Sprite fillNormalSprite;
-        [SerializeField] private Sprite fillWarningSprite;
-        [SerializeField] private Sprite fillCriticalSprite;
-        [SerializeField] private float warningThreshold = 0.65f;
-        [SerializeField] private float criticalThreshold = 0.85f;
+        [SerializeField] private GameObject timerBarRoot;
+        [SerializeField] private Image timerBarFill;
+        [SerializeField] private Color fillNormalColor = Color.green;
+        [SerializeField] private Color fillWarningColor = Color.yellow;
+        [SerializeField] private Color fillCriticalColor = Color.red;
+        [SerializeField] private float dangerFlashSpeed = 4f;
+        [SerializeField] private float dangerFastFlashSpeed = 10f;
 
         private int ghostRecipeIndex;
         private float ghostCycleTimer;
-        private Transform timerBarFillTransform;
-        private Vector3 timerBarFillBaseScale;
 
         private void Awake()
         {
@@ -57,12 +57,7 @@ namespace Gameplay.Workstations
 
                 workstation.OnWorkStateChanged += OnWorkStateChanged;
                 workstation.OnProgressChanged += OnProgressChanged;
-            }
-
-            if (timerBarFill != null)
-            {
-                timerBarFillTransform = timerBarFill.transform;
-                timerBarFillBaseScale = timerBarFillTransform.localScale;
+                workstation.OnDangerProgressChanged += OnDangerProgressChanged;
             }
 
             RefreshAll();
@@ -80,12 +75,21 @@ namespace Gameplay.Workstations
 
                 workstation.OnWorkStateChanged -= OnWorkStateChanged;
                 workstation.OnProgressChanged -= OnProgressChanged;
+                workstation.OnDangerProgressChanged -= OnDangerProgressChanged;
             }
         }
 
         private void Update()
         {
             if (workstation == null) return;
+
+            if (workstation.CurrentWorkState == WorkState.Completed && timerBarFill != null)
+            {
+                float danger = workstation.DangerProgress;
+                if (danger >= 0.5f)
+                    RefreshTimerBar();
+            }
+
             if (workstation.CurrentWorkState != WorkState.Idle) return;
 
             var recipes = workstation.Recipes;
@@ -135,34 +139,55 @@ namespace Gameplay.Workstations
             RefreshTimerBar();
         }
 
+        private void OnDangerProgressChanged()
+        {
+            RefreshTimerBar();
+        }
+
         private void RefreshTimerBar()
         {
             if (workstation == null) return;
 
-            bool show = workstation.CurrentWorkState == WorkState.Working;
+            WorkState state = workstation.CurrentWorkState;
+            bool show = state == WorkState.Working || state == WorkState.Completed;
 
-            if (timerBarFrame != null)
-                timerBarFrame.enabled = show;
+            if (timerBarRoot != null)
+                timerBarRoot.SetActive(show);
 
-            if (timerBarFill != null)
-                timerBarFill.enabled = show;
+            if (!show || timerBarFill == null) return;
 
-            if (!show || timerBarFillTransform == null) return;
+            if (state == WorkState.Working)
+            {
+                timerBarFill.fillAmount = workstation.WorkProgress;
+                timerBarFill.color = fillNormalColor;
+                return;
+            }
 
-            float progress = workstation.WorkProgress;
+            timerBarFill.fillAmount = 1f;
+            float danger = workstation.DangerProgress;
 
-            timerBarFillTransform.localScale = new Vector3(
-                timerBarFillBaseScale.x * progress,
-                timerBarFillBaseScale.y,
-                timerBarFillBaseScale.z
-            );
+            Color dangerColor;
+            if (danger <= 0.5f)
+            {
+                dangerColor = Color.Lerp(fillNormalColor, fillWarningColor, danger * 2f);
+            }
+            else
+            {
+                dangerColor = Color.Lerp(fillWarningColor, fillCriticalColor, (danger - 0.5f) * 2f);
+            }
 
-            if (progress >= criticalThreshold && fillCriticalSprite != null)
-                timerBarFill.sprite = fillCriticalSprite;
-            else if (progress >= warningThreshold && fillWarningSprite != null)
-                timerBarFill.sprite = fillWarningSprite;
-            else if (fillNormalSprite != null)
-                timerBarFill.sprite = fillNormalSprite;
+            if (danger >= 0.8f)
+            {
+                float flash = Mathf.Abs(Mathf.Sin(Time.unscaledTime * dangerFastFlashSpeed));
+                dangerColor.a = Mathf.Lerp(0.3f, 1f, flash);
+            }
+            else if (danger >= 0.5f)
+            {
+                float flash = Mathf.Abs(Mathf.Sin(Time.unscaledTime * dangerFlashSpeed));
+                dangerColor.a = Mathf.Lerp(0.5f, 1f, flash);
+            }
+
+            timerBarFill.color = dangerColor;
         }
 
         private void RefreshSlots()
@@ -365,27 +390,26 @@ namespace Gameplay.Workstations
 
         private void RefreshStatusIcon()
         {
-            if (statusIcon == null || workstation == null) return;
+            if (workstation == null) return;
 
             WorkState state = workstation.CurrentWorkState;
+            bool show = state != WorkState.Idle;
+
+            if (statusRoot != null)
+                statusRoot.SetActive(show);
+
+            if (!show || statusIcon == null) return;
 
             switch (state)
             {
                 case WorkState.Working:
                     statusIcon.sprite = workingSprite;
-                    statusIcon.enabled = workingSprite != null;
                     break;
                 case WorkState.Completed:
                     statusIcon.sprite = completedSprite;
-                    statusIcon.enabled = completedSprite != null;
                     break;
                 case WorkState.Failed:
                     statusIcon.sprite = failedSprite;
-                    statusIcon.enabled = failedSprite != null;
-                    break;
-                default:
-                    statusIcon.sprite = null;
-                    statusIcon.enabled = false;
                     break;
             }
         }

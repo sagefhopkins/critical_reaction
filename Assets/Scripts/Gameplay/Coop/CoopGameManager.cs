@@ -375,15 +375,7 @@ namespace Gameplay.Coop
         {
             if (!IsServer || currentLevelConfig == null) return;
 
-            targetCount.Value = currentLevelConfig.TotalTargetCount;
-            targetCompoundName.Value = currentLevelConfig.PrimaryTargetName;
-
             Orders.Clear();
-            if (currentLevelConfig.Orders != null)
-            {
-                for (int i = 0; i < currentLevelConfig.Orders.Length; i++)
-                    Orders.Add(currentLevelConfig.Orders[i].ToOrderData());
-            }
         }
 
         private void SpawnLayout(GameObject layoutPrefab)
@@ -497,6 +489,26 @@ namespace Gameplay.Coop
             var dstDp = destination.GetComponent<DeliveryPoint>();
             if (srcDp != null && dstDp != null)
                 dstDp.InitializeFrom(srcDp);
+
+            var srcHatch = source.GetComponent<Workstations.SupplyHatch.SupplyHatch>();
+            var dstHatch = destination.GetComponent<Workstations.SupplyHatch.SupplyHatch>();
+            if (srcHatch != null && dstHatch != null)
+                dstHatch.InitializeFrom(srcHatch);
+
+            var srcBelt = source.GetComponent<Workstations.Conveyor.ConveyorBelt>();
+            var dstBelt = destination.GetComponent<Workstations.Conveyor.ConveyorBelt>();
+            if (srcBelt != null && dstBelt != null)
+                dstBelt.InitializeFrom(srcBelt);
+
+            var srcEnd = source.GetComponent<Workstations.Conveyor.ConveyorEnd>();
+            var dstEnd = destination.GetComponent<Workstations.Conveyor.ConveyorEnd>();
+            if (srcEnd != null && dstEnd != null)
+                dstEnd.InitializeFrom(srcEnd);
+
+            var srcSpawner = source.GetComponent<Workstations.RecipeTray.TraySpawner>();
+            var dstSpawner = destination.GetComponent<Workstations.RecipeTray.TraySpawner>();
+            if (srcSpawner != null && dstSpawner != null)
+                dstSpawner.InitializeFrom(srcSpawner);
         }
 
         private NetworkObject FindRegisteredPrefab(NetworkObject netObj)
@@ -675,6 +687,15 @@ namespace Gameplay.Coop
         private void BroadcastAlertClientRpc(string message)
         {
             OnAlert?.Invoke(message);
+        }
+
+        public void FailLevelServer()
+        {
+            if (!IsServer) return;
+            if (!levelActive.Value) return;
+
+            levelActive.Value = false;
+            BroadcastLevelFailedClientRpc();
         }
 
         [ClientRpc]
