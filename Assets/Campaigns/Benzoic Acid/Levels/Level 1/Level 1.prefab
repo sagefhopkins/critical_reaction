@@ -5987,6 +5987,38 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 2592690023
       objectReference: {fileID: 0}
+    - target: {fileID: 4450933067047323006, guid: 65a799b8ea1a4731d976b4e569b121d3, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 4450933067047323006, guid: 65a799b8ea1a4731d976b4e569b121d3, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4450933067047323006, guid: 65a799b8ea1a4731d976b4e569b121d3, type: 3}
+      propertyPath: m_WasSpriteAssigned
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5545093312887419260, guid: 65a799b8ea1a4731d976b4e569b121d3, type: 3}
+      propertyPath: recipes.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5545093312887419260, guid: 65a799b8ea1a4731d976b4e569b121d3, type: 3}
+      propertyPath: 'recipes.Array.data[0]'
+      value: 
+      objectReference: {fileID: 11400000, guid: d621dcd2110ea60c59bd74bbc2683757, type: 2}
+    - target: {fileID: 8702259638411771294, guid: 65a799b8ea1a4731d976b4e569b121d3, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 8702259638411771294, guid: 65a799b8ea1a4731d976b4e569b121d3, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8702259638411771294, guid: 65a799b8ea1a4731d976b4e569b121d3, type: 3}
+      propertyPath: m_WasSpriteAssigned
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8827670922153826115, guid: 65a799b8ea1a4731d976b4e569b121d3, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.4339136
@@ -6085,6 +6117,10 @@ PrefabInstance:
       propertyPath: m_WasSpriteAssigned
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3388939744265717701, guid: 56c07c5a5bfd98a7cab309ddcc57ee12, type: 3}
+      propertyPath: statusIcon
+      value: 
+      objectReference: {fileID: 124227144027767796}
     - target: {fileID: 3465211133792745679, guid: 56c07c5a5bfd98a7cab309ddcc57ee12, type: 3}
       propertyPath: GlobalObjectIdHash
       value: 709553033
@@ -6156,11 +6192,11 @@ PrefabInstance:
     - target: {fileID: 6507296581506534953, guid: 56c07c5a5bfd98a7cab309ddcc57ee12, type: 3}
       propertyPath: 'items.Array.data[1]'
       value: 
-      objectReference: {fileID: 11400000, guid: 324051af98e34d9e681fd46f1891c16d, type: 2}
+      objectReference: {fileID: 11400000, guid: 3e9453f48c9c05b22a007821815cfe5c, type: 2}
     - target: {fileID: 6507296581506534953, guid: 56c07c5a5bfd98a7cab309ddcc57ee12, type: 3}
       propertyPath: 'items.Array.data[2]'
       value: 
-      objectReference: {fileID: 11400000, guid: 9214407f3fe9e406784d63feb295507d, type: 2}
+      objectReference: {fileID: 11400000, guid: 917b571e7e260295089607b198b519d5, type: 2}
     - target: {fileID: 6507296581506534953, guid: 56c07c5a5bfd98a7cab309ddcc57ee12, type: 3}
       propertyPath: 'recipes.Array.data[0]'
       value: 
@@ -6168,7 +6204,7 @@ PrefabInstance:
     - target: {fileID: 6507296581506534953, guid: 56c07c5a5bfd98a7cab309ddcc57ee12, type: 3}
       propertyPath: 'recipes.Array.data[1]'
       value: 
-      objectReference: {fileID: 11400000, guid: 228d21fa1d827fd158eaf79fb5423f98, type: 2}
+      objectReference: {fileID: 11400000, guid: b0a86249d0bbd8b35a4a3eb51b05912d, type: 2}
     - target: {fileID: 7798124387391367190, guid: 56c07c5a5bfd98a7cab309ddcc57ee12, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.10789999
@@ -6209,6 +6245,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7961814619302085323, guid: 56c07c5a5bfd98a7cab309ddcc57ee12, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 3ddac58ad4696416390455df62807944, type: 3}
     - target: {fileID: 9023933830208224994, guid: 56c07c5a5bfd98a7cab309ddcc57ee12, type: 3}
       propertyPath: m_Sprite
       value: 
@@ -6218,6 +6258,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 56c07c5a5bfd98a7cab309ddcc57ee12, type: 3}
+--- !u!212 &124227144027767796 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 2987346559120008350, guid: 56c07c5a5bfd98a7cab309ddcc57ee12, type: 3}
+  m_PrefabInstance: {fileID: 2939856820600694634}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &4968869945466949500 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7798124387391367190, guid: 56c07c5a5bfd98a7cab309ddcc57ee12, type: 3}
@@ -6372,6 +6417,10 @@ PrefabInstance:
     - target: {fileID: 7108295103831811890, guid: ac0a07307ab70b3d7acd8bedf4577447, type: 3}
       propertyPath: m_Name
       value: Scale Station Variant
+      objectReference: {fileID: 0}
+    - target: {fileID: 7108295103831811890, guid: ac0a07307ab70b3d7acd8bedf4577447, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7481171312341669770, guid: ac0a07307ab70b3d7acd8bedf4577447, type: 3}
       propertyPath: m_Size.y

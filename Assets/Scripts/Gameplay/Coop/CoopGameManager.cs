@@ -26,6 +26,9 @@ namespace Gameplay.Coop
         [SerializeField] private bool autoStartLevel = true;
         [SerializeField] private int autoStartLevelId = 0;
 
+        [Header("Dropped Items")]
+        [SerializeField] private GameObject droppedItemPrefab;
+
         public NetworkVariable<int> LevelId = new NetworkVariable<int>(-1);
 
         private NetworkVariable<float> elapsedTime = new NetworkVariable<float>(
@@ -77,6 +80,28 @@ namespace Gameplay.Coop
         public bool IsLevelComplete => deliveredCount.Value >= targetCount.Value;
         public bool IsTimeUp => elapsedTime.Value >= levelTimeLimit;
         public LevelConfig CurrentLevelConfig => currentLevelConfig;
+
+        public void SpawnDroppedItemServer(ushort itemId, Vector3 worldPosition)
+        {
+            if (!IsServer) return;
+            if (itemId == 0) return;
+            if (droppedItemPrefab == null) return;
+
+            GameObject go = Instantiate(droppedItemPrefab, worldPosition, Quaternion.identity);
+
+            NetworkObject netObj = go.GetComponent<NetworkObject>();
+            if (netObj == null)
+            {
+                Destroy(go);
+                return;
+            }
+
+            netObj.Spawn(true);
+
+            var dropped = go.GetComponent<Gameplay.Items.DroppedItem>();
+            if (dropped != null)
+                dropped.SetItemServer(itemId);
+        }
 
         public int CalculateStars()
         {

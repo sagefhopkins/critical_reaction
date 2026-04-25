@@ -14,11 +14,13 @@ namespace UX.CoopMenu
         [Header("State")]
         [SerializeField] private bool isSlotJoined;
         [SerializeField] private bool isSelected;
+        [SerializeField] private string emptySlotText = "No Player Selected";
 
         private static readonly Color32 ButtonIdleColor = new Color32(120, 64, 24, 255);
-        private static readonly Color ButtonSelectedColor = Color.yellow;
 
-        private static readonly Color IconJoinedColor = Color.yellow;
+        private Color buttonSelectedColor = Color.yellow;
+
+        private string slotPlayerName = string.Empty;
 
         private TMP_Text buttonLabel;
 
@@ -35,16 +37,21 @@ namespace UX.CoopMenu
             ApplyVisuals();
         }
 
-        public void SetSelected(bool selected)
+        public void SetSelected(bool selected, Color selectedColor)
         {
-            if (isSelected == selected) return;
+            bool changed = isSelected != selected || buttonSelectedColor != selectedColor;
             isSelected = selected;
-            ApplyVisuals();
+            buttonSelectedColor = selectedColor;
+            if (changed) ApplyVisuals();
         }
 
-        public void SetSlotJoined(bool joined)
+        public void SetSlotJoined(bool joined, string playerDisplayName = null)
         {
-            if (isSlotJoined == joined) return;
+            bool nameChanged = playerDisplayName != null && slotPlayerName != playerDisplayName;
+            if (playerDisplayName != null)
+                slotPlayerName = playerDisplayName;
+
+            if (isSlotJoined == joined && !nameChanged) return;
             isSlotJoined = joined;
             ApplyVisuals();
         }
@@ -61,6 +68,7 @@ namespace UX.CoopMenu
         {
             isSlotJoined = false;
             isSelected = false;
+            slotPlayerName = string.Empty;
             ApplyVisuals();
         }
 
@@ -74,16 +82,20 @@ namespace UX.CoopMenu
         private void ApplyButtonVisuals()
         {
             if (playerButton == null) return;
-            playerButton.image.color = isSelected ? ButtonSelectedColor : ButtonIdleColor;
+            playerButton.image.color = isSelected ? buttonSelectedColor : ButtonIdleColor;
         }
 
         private void ApplyIconVisuals()
         {
-            if (playerIcon == null) return;
+            if (playerIcon != null)
+                playerIcon.gameObject.SetActive(false);
 
-            playerIcon.gameObject.SetActive(isSlotJoined);
-            if (isSlotJoined)
-                playerIcon.color = IconJoinedColor;
+            if (playerName != null)
+            {
+                bool showName = isSlotJoined && !string.IsNullOrEmpty(slotPlayerName);
+                playerName.text = showName ? slotPlayerName : emptySlotText;
+                playerName.gameObject.SetActive(true);
+            }
         }
 
         private void ApplyButtonText()

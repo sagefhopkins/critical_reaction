@@ -148,5 +148,29 @@ namespace Gameplay.Player
             if (!IsServer) return;
             heldItemId.Value = NoneId;
         }
+
+        public void TryDropHeld()
+        {
+            if (!IsOwner) return;
+            if (!IsHoldingLocal) return;
+            if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsListening) return;
+
+            TryDropHeldServerRpc();
+        }
+
+        [ServerRpc]
+        private void TryDropHeldServerRpc()
+        {
+            if (!IsServer) return;
+            if (heldItemId.Value == NoneId) return;
+
+            ushort id = heldItemId.Value;
+            Vector3 pos = transform.position;
+
+            if (Gameplay.Coop.CoopGameManager.Instance != null)
+                Gameplay.Coop.CoopGameManager.Instance.SpawnDroppedItemServer(id, pos);
+
+            heldItemId.Value = NoneId;
+        }
     }
 }

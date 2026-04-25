@@ -31,6 +31,8 @@ namespace Gameplay.Player
             NetworkVariableWritePermission.Server
         );
 
+        public string PlayerName => playerName.Value.ToString();
+
         public override void OnNetworkSpawn()
         {
             if (IsOwner)

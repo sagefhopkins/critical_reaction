@@ -7,6 +7,8 @@ namespace UX.CoopMenu
     public class CoopConnectMenu : MonoBehaviour
     {
         [SerializeField] private UX.MainMenu.MainMenu mainMenu;
+
+        public UX.MainMenu.MainMenu MainMenu => mainMenu;
         [SerializeField] private UX.Net.RelayConnector relay;
         [SerializeField] private GameObject connectPanel;
         [SerializeField] private GameObject lobbyPanel;
@@ -93,6 +95,18 @@ namespace UX.CoopMenu
             if (connectPanel != null) connectPanel.SetActive(true);
             if (lobbyPanel != null) lobbyPanel.SetActive(false);
             if(controlPanel != null) controlPanel.SetActive(false);
+        }
+
+        public void ShowSelector()
+        {
+            if (connectPanel != null) connectPanel.SetActive(false);
+            if (lobbyPanel != null) lobbyPanel.SetActive(false);
+            if (controlPanel != null) controlPanel.SetActive(true);
+        }
+
+        public void HideSelector()
+        {
+            if (controlPanel != null) controlPanel.SetActive(false);
         }
 
         private void SetStatus(string message)

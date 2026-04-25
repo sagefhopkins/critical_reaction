@@ -556,5 +556,6 @@ namespace UX.Options
         public KeyCode Apply;
         public KeyCode Cancel;
         public KeyCode Interact;
+        public KeyCode Drop;
     }
 }

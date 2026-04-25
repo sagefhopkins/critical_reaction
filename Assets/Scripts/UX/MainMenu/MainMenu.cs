@@ -12,6 +12,8 @@ namespace UX.MainMenu
         [SerializeField] private Color selectedColor = Color.yellow;
         [SerializeField] private Color defaultColor = Color.white;
 
+        public Color SelectedColor => selectedColor;
+
         [Header("Panels")]
         [SerializeField] private GameObject mainMenuPanel;
         [SerializeField] private GameObject coopPanel;
@@ -28,34 +30,36 @@ namespace UX.MainMenu
         [SerializeField] private UX.CoopMenu.CoopConnectMenu coopConnectMenu;
         [SerializeField] private int maxClients = 3;
 
-        [Header("Camera Zoom")]
-        [SerializeField] private Camera menuCamera;
-        [SerializeField] private float defaultZoom = 5f;
-        [SerializeField] private float coopZoom = 3f;
-        [SerializeField] private Vector3 defaultCameraPosition = new Vector3(0f, 0f, -10f);
-        [SerializeField] private Vector3 coopCameraPosition = new Vector3(0f, 0f, -10f);
+        [Header("UI Zoom")]
+        [SerializeField] private RectTransform uiRoot;
+        [SerializeField] private float defaultScale = 1f;
+        [SerializeField] private float menuScale = 1.6667f;
+        [SerializeField] private Vector2 defaultUiOffset = Vector2.zero;
+        [SerializeField] private Vector2 menuUiOffset = Vector2.zero;
         [SerializeField] private float zoomSpeed = 5f;
 
-        private float targetZoom;
-        private Vector3 targetCameraPosition;
+        private float targetScale;
+        private Vector2 targetUiOffset;
 
         private enum MenuState
         {
             Main,
             CoopSubMenu,
-            EnteringCode
+            EnteringCode,
+            InLobby
         }
 
         private MenuState state = MenuState.Main;
         private int coopSubMenuIndex;
+        private UX.CoopMenu.CoopLobbyTypeSelector lobbyTypeSelector;
 
         private void OnEnable()
         {
             selectedIndex = Mathf.Clamp(selectedIndex, 0, Mathf.Max(0, menuOptions.Length - 1));
 
-            targetZoom = defaultZoom;
-            targetCameraPosition = defaultCameraPosition;
-            ApplyCameraImmediate();
+            targetScale = defaultScale;
+            targetUiOffset = defaultUiOffset;
+            ApplyUiZoomImmediate();
 
             ShowMainMenu();
             UpdateSelection();
@@ -63,20 +67,21 @@ namespace UX.MainMenu
 
         private void Update()
         {
-            UpdateCameraZoom();
-
-            if (!mainMenuPanel || !mainMenuPanel.activeSelf) return;
+            UpdateUiZoom();
 
             switch (state)
             {
                 case MenuState.Main:
-                    UpdateMainMenu();
+                    if (mainMenuPanel != null && mainMenuPanel.activeSelf)
+                        UpdateMainMenu();
                     break;
                 case MenuState.CoopSubMenu:
-                    UpdateCoopSubMenu();
+                    if (coopPanel != null && coopPanel.activeSelf)
+                        UpdateCoopSubMenu();
                     break;
                 case MenuState.EnteringCode:
-                    UpdateEnteringCode();
+                    if (coopPanel != null && coopPanel.activeSelf)
+                        UpdateEnteringCode();
                     break;
             }
         }
@@ -101,15 +106,17 @@ namespace UX.MainMenu
         {
             if (Input.GetKeyDown(KeyCode.Escape))
             {
-                CloseCoopSubMenu();
+                ShowMainMenu();
                 return;
             }
 
+            if (coopSubMenuOptions == null || coopSubMenuOptions.Length == 0) return;
+
             int prev = coopSubMenuIndex;
 
-            if (Input.GetKeyDown(KeyCode.UpArrow))
+            if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.LeftArrow))
                 coopSubMenuIndex = (coopSubMenuIndex - 1 + coopSubMenuOptions.Length) % coopSubMenuOptions.Length;
-            else if (Input.GetKeyDown(KeyCode.DownArrow))
+            else if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.RightArrow))
                 coopSubMenuIndex = (coopSubMenuIndex + 1) % coopSubMenuOptions.Length;
 
             if (prev != coopSubMenuIndex)
@@ -123,8 +130,9 @@ namespace UX.MainMenu
         {
             if (Input.GetKeyDown(KeyCode.Escape))
             {
-                HideJoinCodeInput();
                 state = MenuState.CoopSubMenu;
+                if (coopConnectMenu != null) coopConnectMenu.ShowSelector();
+                else HideJoinCodeInput();
                 UpdateCoopSubMenuSelection();
                 return;
             }
@@ -139,7 +147,7 @@ namespace UX.MainMenu
             CloseCoopSubMenu();
             SetActivePanel(mainMenuPanel);
             UpdateSelection();
-            SetCameraTarget(defaultZoom, defaultCameraPosition);
+            SetUiZoomTarget(defaultScale, defaultUiOffset);
             if (Audio.MusicManager.Instance != null)
                 Audio.MusicManager.Instance.PlayMainMenuMusic();
         }
@@ -148,11 +156,12 @@ namespace UX.MainMenu
         {
             state = MenuState.CoopSubMenu;
             coopSubMenuIndex = 0;
+            SetActivePanel(coopPanel);
             if (coopSubMenuRoot != null) coopSubMenuRoot.SetActive(true);
+            if (coopConnectMenu != null) coopConnectMenu.ShowSelector();
             if (coopStatusText != null) coopStatusText.text = string.Empty;
-            HideJoinCodeInput();
             UpdateCoopSubMenuSelection();
-            SetCameraTarget(coopZoom, coopCameraPosition);
+            SetUiZoomTarget(menuScale, menuUiOffset);
         }
 
         private void CloseCoopSubMenu()
@@ -165,11 +174,13 @@ namespace UX.MainMenu
         private void ShowOptions()
         {
             SetActivePanel(optionsPanel);
+            SetUiZoomTarget(menuScale, menuUiOffset);
         }
 
         private void ShowCredits()
         {
             SetActivePanel(creditsPanel);
+            SetUiZoomTarget(menuScale, menuUiOffset);
         }
 
         private void Quit()
@@ -205,14 +216,10 @@ namespace UX.MainMenu
             switch (coopSubMenuIndex)
             {
                 case 0:
-                    HostLobby();
-                    break;
-                case 1:
                     ShowJoinCodeInput();
                     break;
-                case 2:
-                    CloseCoopSubMenu();
-                    state = MenuState.Main;
+                case 1:
+                    HostLobby();
                     break;
             }
         }
@@ -224,6 +231,8 @@ namespace UX.MainMenu
 
             if (relay == null) return;
 
+            if (coopConnectMenu != null) coopConnectMenu.HideSelector();
+
             try
             {
                 SetCoopStatus("Creating lobby...");
@@ -234,6 +243,7 @@ namespace UX.MainMenu
             catch (Exception e)
             {
                 SetCoopStatus(e.Message);
+                if (coopConnectMenu != null) coopConnectMenu.ShowSelector();
             }
         }
 
@@ -268,6 +278,7 @@ namespace UX.MainMenu
         {
             CloseCoopSubMenu();
             SetActivePanel(coopPanel);
+            state = MenuState.InLobby;
 
             if (coopConnectMenu != null)
                 coopConnectMenu.ShowLobbyPanel();
@@ -279,7 +290,11 @@ namespace UX.MainMenu
         private void ShowJoinCodeInput()
         {
             state = MenuState.EnteringCode;
-            if (joinCodeRoot != null) joinCodeRoot.SetActive(true);
+            if (coopConnectMenu != null)
+                coopConnectMenu.ShowConnectPanel();
+            else if (joinCodeRoot != null)
+                joinCodeRoot.SetActive(true);
+
             if (joinCodeInput != null)
             {
                 joinCodeInput.text = string.Empty;
@@ -299,27 +314,28 @@ namespace UX.MainMenu
                 coopStatusText.text = message;
         }
 
-        private void UpdateCameraZoom()
+        private void UpdateUiZoom()
         {
-            if (menuCamera == null) return;
+            if (uiRoot == null) return;
 
             float dt = Time.unscaledDeltaTime * zoomSpeed;
-            menuCamera.orthographicSize = Mathf.Lerp(menuCamera.orthographicSize, targetZoom, dt);
-            menuCamera.transform.position = Vector3.Lerp(menuCamera.transform.position, targetCameraPosition, dt);
+            float scale = Mathf.Lerp(uiRoot.localScale.x, targetScale, dt);
+            uiRoot.localScale = new Vector3(scale, scale, 1f);
+            uiRoot.anchoredPosition = Vector2.Lerp(uiRoot.anchoredPosition, targetUiOffset, dt);
         }
 
-        private void ApplyCameraImmediate()
+        private void ApplyUiZoomImmediate()
         {
-            if (menuCamera == null) return;
+            if (uiRoot == null) return;
 
-            menuCamera.orthographicSize = targetZoom;
-            menuCamera.transform.position = targetCameraPosition;
+            uiRoot.localScale = new Vector3(targetScale, targetScale, 1f);
+            uiRoot.anchoredPosition = targetUiOffset;
         }
 
-        private void SetCameraTarget(float zoom, Vector3 position)
+        private void SetUiZoomTarget(float scale, Vector2 offset)
         {
-            targetZoom = zoom;
-            targetCameraPosition = position;
+            targetScale = scale;
+            targetUiOffset = offset;
         }
 
         private void UpdateSelection()
@@ -342,6 +358,12 @@ namespace UX.MainMenu
 
                 text.color = (i == coopSubMenuIndex) ? selectedColor : defaultColor;
             }
+
+            if (lobbyTypeSelector == null && coopConnectMenu != null)
+                lobbyTypeSelector = coopConnectMenu.GetComponentInChildren<UX.CoopMenu.CoopLobbyTypeSelector>(true);
+
+            if (lobbyTypeSelector != null)
+                lobbyTypeSelector.selectedIndex = coopSubMenuIndex;
         }
 
         private void SetActivePanel(GameObject panelToEnable)

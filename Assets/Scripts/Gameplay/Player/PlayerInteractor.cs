@@ -90,6 +90,17 @@ namespace Gameplay.Player
             if (InteractionMenus.Instance != null && InteractionMenus.Instance.AnyMenuOpen)
                 return;
 
+            bool dropPressed = InputSettings.Instance != null
+                ? InputSettings.Instance.IsDropPressed()
+                : Input.GetKeyDown(KeyCode.Q);
+
+            if (dropPressed && carry != null && carry.IsHoldingLocal
+                && (playerController == null || !playerController.HasMop))
+            {
+                carry.TryDropHeld();
+                return;
+            }
+
             bool interact = InputSettings.Instance != null
                 ? InputSettings.Instance.IsInteractHeld()
                 : Input.GetKey(KeyCode.E);

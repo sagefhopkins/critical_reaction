@@ -16,7 +16,7 @@ MonoBehaviour:
   recipeType: 7
   ingredients:
   - {fileID: 11400000, guid: 3d5c0823c6896697a894f81f6e17393d, type: 2}
-  - {fileID: 11400000, guid: 9214407f3fe9e406784d63feb295507d, type: 2}
+  - {fileID: 11400000, guid: 917b571e7e260295089607b198b519d5, type: 2}
   outputItem: {fileID: 11400000, guid: 6844584fca789afeea2dd12870046351, type: 2}
   outputQuantity: 1
   minTemperature: 0

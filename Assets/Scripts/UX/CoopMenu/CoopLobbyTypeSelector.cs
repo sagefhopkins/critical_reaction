@@ -10,33 +10,20 @@ namespace UX.CoopMenu
         public int selectedIndex;
         private void Update()
         {
-            if (connectMenu.gameObject.activeSelf)
-            {
-                if (Input.GetKeyDown(KeyCode.Return))
-                {
-                    options[selectedIndex].onClick.Invoke();
-                }
-
-                if (Input.GetKeyDown(KeyCode.LeftArrow))
-                {
-                    selectedIndex = Mathf.Clamp(selectedIndex - 1, 0, options.Length - 1);
-                }
-
-                if (Input.GetKeyDown(KeyCode.RightArrow))
-                {
-                    selectedIndex = Mathf.Clamp(selectedIndex + 1, 0, options.Length - 1);
-                }
+            if (connectMenu != null && connectMenu.gameObject.activeSelf)
                 ApplyVisual();
-            }
         }
 
         private void ApplyVisual()
         {
-            
+            Color selectedColor = connectMenu != null && connectMenu.MainMenu != null
+                ? connectMenu.MainMenu.SelectedColor
+                : Color.yellow;
+
             foreach (var option in options)
             {
                 bool selected = options[selectedIndex] == option;
-                option.image.color = selected ? Color.yellow : new Color32(120, 64, 24, 255);
+                option.image.color = selected ? selectedColor : new Color32(120, 64, 24, 255);
             }
         }
     }

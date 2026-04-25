@@ -90,10 +90,25 @@ namespace Gameplay.Workstations.RecipeTray
 
         private void Update()
         {
-            if (IsServer && conveyor != null && !isComplete.Value)
+            if (IsServer && conveyor != null)
                 AdvanceOnBelt();
 
             UpdateWorldPosition();
+
+            EnsureItemsPopulated();
+        }
+
+        private void EnsureItemsPopulated()
+        {
+            if (items != null && items.Length > 0) return;
+            if (CoopGameManager.Instance == null) return;
+
+            var config = CoopGameManager.Instance.CurrentLevelConfig;
+            if (config == null || config.AvailableProducts == null || config.AvailableProducts.Length == 0)
+                return;
+
+            items = config.AvailableProducts;
+            RefreshVisuals();
         }
 
         public void SetOrderServer(ushort item1, ushort item2, ConveyorBelt belt, LabItem[] itemList, float startPosition = 0f)

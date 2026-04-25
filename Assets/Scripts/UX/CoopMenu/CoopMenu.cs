@@ -25,7 +25,8 @@ namespace UX.CoopMenu
         [SerializeField] private KeyCode deselectKey = KeyCode.Escape;
 
         private static readonly Color32 RowTwoIdleColor = new Color32(120, 64, 24, 255);
-        private static readonly Color RowTwoSelectedColor = Color.yellow;
+
+        private Color MenuSelectedColor => menuController != null ? menuController.SelectedColor : Color.yellow;
 
         private const int RowOne = 0;
         private const int RowTwo = 1;
@@ -232,23 +233,43 @@ namespace UX.CoopMenu
             int count = Mathf.Min(rowOne.Length, lobby.Slots.Count);
 
             for (int i = 0; i < count; i++)
-                rowOne[i].SetSlotJoined(lobby.Slots[i].IsOccupied);
+            {
+                LobbySlot slot = lobby.Slots[i];
+                string name = slot.IsOccupied ? LookupPlayerName(slot.OwnerClientId) : string.Empty;
+                rowOne[i].SetSlotJoined(slot.IsOccupied, name);
+            }
+        }
+
+        private static string LookupPlayerName(ulong clientId)
+        {
+            if (NetworkManager.Singleton == null) return string.Empty;
+            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out var client))
+                return $"Player {clientId}";
+            if (client.PlayerObject == null) return $"Player {clientId}";
+
+            var indicator = client.PlayerObject.GetComponent<Gameplay.Player.PlayerIndicatorSetup>();
+            if (indicator == null) return $"Player {clientId}";
+
+            string name = indicator.PlayerName;
+            return string.IsNullOrEmpty(name) ? $"Player {clientId}" : name;
         }
 
         private void ApplySelectionVisuals()
         {
             ClampIndexToCurrentRow();
 
+            Color selectedColor = MenuSelectedColor;
+
             for (int i = 0; i < rowOne.Length; i++)
             {
                 bool selected = !HasJoinedSlot && selectedIndex.x == RowOne && i == selectedIndex.y;
-                rowOne[i].SetSelected(selected);
+                rowOne[i].SetSelected(selected, selectedColor);
             }
 
             for (int i = 0; i < rowTwo.Length; i++)
             {
                 bool selected = selectedIndex.x == RowTwo && i == selectedIndex.y;
-                rowTwo[i].image.color = selected ? RowTwoSelectedColor : RowTwoIdleColor;
+                rowTwo[i].image.color = selected ? selectedColor : RowTwoIdleColor;
             }
         }
 

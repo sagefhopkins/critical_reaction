@@ -14,7 +14,8 @@ namespace UX.Options
             Right = KeyCode.D,
             Apply = KeyCode.Return,
             Cancel = KeyCode.Escape,
-            Interact = KeyCode.E
+            Interact = KeyCode.E,
+            Drop = KeyCode.Q
         };
 
         public Controls Controls => controls;
@@ -53,6 +54,7 @@ namespace UX.Options
             PlayerPrefs.SetInt("Control_Apply", (int)controls.Apply);
             PlayerPrefs.SetInt("Control_Cancel", (int)controls.Cancel);
             PlayerPrefs.SetInt("Control_Interact", (int)controls.Interact);
+            PlayerPrefs.SetInt("Control_Drop", (int)controls.Drop);
             PlayerPrefs.Save();
         }
 
@@ -65,6 +67,7 @@ namespace UX.Options
             controls.Apply = (KeyCode)PlayerPrefs.GetInt("Control_Apply", (int)KeyCode.Return);
             controls.Cancel = (KeyCode)PlayerPrefs.GetInt("Control_Cancel", (int)KeyCode.Escape);
             controls.Interact = (KeyCode)PlayerPrefs.GetInt("Control_Interact", (int)KeyCode.E);
+            controls.Drop = (KeyCode)PlayerPrefs.GetInt("Control_Drop", (int)KeyCode.Q);
         }
 
         public bool GetKey(KeyCode key)
@@ -85,5 +88,6 @@ namespace UX.Options
         public bool IsCancelPressed() => Input.GetKeyDown(controls.Cancel);
         public bool IsInteractPressed() => Input.GetKeyDown(controls.Interact);
         public bool IsInteractHeld() => Input.GetKey(controls.Interact);
+        public bool IsDropPressed() => Input.GetKeyDown(controls.Drop);
     }
 }
