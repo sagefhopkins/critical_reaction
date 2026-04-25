@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using Gameplay.Player;
@@ -223,7 +223,7 @@ namespace Gameplay.Coop
 
             elapsedTime.Value += Time.deltaTime;
 
-            if (IsTimeUp)
+            if (IsTimeUp && levelActive.Value)
             {
                 levelActive.Value = false;
                 if (IsLevelComplete)
@@ -298,6 +298,8 @@ namespace Gameplay.Coop
 
         private void Begin(int levelId)
         {
+            levelActive.Value = false;
+
             CacheLevelConfig(levelId);
 
             if (IsServer)
@@ -309,6 +311,7 @@ namespace Gameplay.Coop
                 ResetAllPlayers();
                 elapsedTime.Value = 0f;
                 deliveredCount.Value = 0;
+                PrepareForSceneReloadServer();
             }
             else
             {
@@ -739,6 +742,31 @@ namespace Gameplay.Coop
         private void BroadcastLevelResultsClientRpc(int stars, float timeRemaining)
         {
             OnLevelResults?.Invoke(stars, timeRemaining);
+        }
+
+        public void QuitLevelServer()
+        {
+            if (!IsServer) return;
+
+            Debug.Log("Quitting mid-level → NO SAVE, resetting state");
+            levelActive.Value = false;
+
+            PrepareForSceneReloadServer();
+
+            ForceReturnToMenuClientRpc();
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void RequestQuitServerRpc()
+        {
+            QuitLevelServer();
+        }
+
+        [ClientRpc]
+        private void ForceReturnToMenuClientRpc()
+        {
+            CleanupLayoutClient();
+            UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
         }
     }
 }
